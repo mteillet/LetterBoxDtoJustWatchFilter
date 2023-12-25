@@ -33,7 +33,7 @@ def getList(listLink):
         posterContainer = film.find("div", class_="really-lazy-load")
         #print(posterContainer.find("div", class_="data-film-slug"))
         regex = re.compile('data-film-slug=["\'](.*?)["\']')
-        movieName = (regex.search(str(posterContainer)).group(1))
+        movieName = regex.search(str(posterContainer)).group(1)
         filmList.append(movieName)
 
     return filmList
@@ -55,7 +55,10 @@ def justwatchCompare(filmList):
     justWatchURL = 'https://www.justwatch.com/fr'
     
     # Temp test on single movie
-    filmList = ["sicario-2015"]
+    filmList = ["the-skin-i-live-in"]
+
+    # TODO !!!
+    # Need to test searching on justwatch directly
 
     for movie in filmList:
         # Get the letterboxd film page
@@ -67,10 +70,14 @@ def justwatchCompare(filmList):
             return print("ERROR LOADING THE LINK")
         
         soup = BeautifulSoup(filmLetterBoxPage.content, features="html.parser")
+        filmSoup = soup.find("div", class_="js-csi js-hide-in-app")
+        regex = re.compile('data-src=["\'](.*?)["\']')
+        link = "https://letterboxd.com%s" % regex.search(str(filmSoup)).group(1)
+        print(link)
+        soup = BeautifulSoup(requests.get(link).content, features="html.parser")
         print(soup)
+
         '''
-        filmSoup = soup.find("a", class_="jw-branding")
-        print(filmSoup)
         filmSoup = soup.find("section", class_="watch-panel js-watch-panel")
         print(filmSoup)
         '''
