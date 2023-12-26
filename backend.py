@@ -62,25 +62,25 @@ def justwatchCompare(filmList):
 
     for movie in filmList:
         # Get the letterboxd film page
-        letterBoxLink = "https://letterboxd.com/film/%s/" % movie
-        filmLetterBoxPage = requests.get(letterBoxLink)
+        justWatchLink = "%s/recherche?q=%s" % (justWatchURL, movie.replace("-", " "))
+        justWatchSearch = requests.get(justWatchLink)
 
         # Check there was no error getting the list 
-        if filmLetterBoxPage.status_code != 200:
+        if justWatchSearch.status_code != 200:
             return print("ERROR LOADING THE LINK")
         
-        soup = BeautifulSoup(filmLetterBoxPage.content, features="html.parser")
-        filmSoup = soup.find("div", class_="js-csi js-hide-in-app")
-        regex = re.compile('data-src=["\'](.*?)["\']')
-        link = "https://letterboxd.com%s" % regex.search(str(filmSoup)).group(1)
-        print(link)
-        soup = BeautifulSoup(requests.get(link).content, features="html.parser")
-        print(soup)
+        soup = BeautifulSoup(justWatchSearch.content, features="html.parser")
+        filmSoup = soup.find_all("div", class_="title-list-row__column")
+        spanTitle = filmSoup[1].find("span", class_="header-title")
+        print(spanTitle.text)
 
         '''
-        filmSoup = soup.find("section", class_="watch-panel js-watch-panel")
-        print(filmSoup)
+        for span in spans:
+            # if span.text == "The Skin I Live In":
+            print(span)
         '''
+        #title = filmSoup.find("span", class_="header-title")
+        #print(title)
 
 
 if __name__ == "__main__":
