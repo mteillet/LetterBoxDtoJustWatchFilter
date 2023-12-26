@@ -58,6 +58,7 @@ def justwatchCompare(filmList):
     #filmList = ["boyhood", "the-skin-i-live-in", "kairo", "fargo"]
 
     filmDict = {}
+    servicesList = []
 
     current = 1
     for movie in filmList:
@@ -80,6 +81,8 @@ def justwatchCompare(filmList):
                 filmDict[movie]["jwTitle"] = spanTitle.text
             except IndexError:
                 filmDict[movie]["jwTitle"] = "NOT FOUND"
+            
+            # STREAMING SERVICES
             streamSoup = soup.find("div", class_="buybox-row stream inline")
             # In case ne streaming service is available
             if streamSoup is None:
@@ -93,14 +96,23 @@ def justwatchCompare(filmList):
                 regex = re.compile('alt=["\'](.*?)["\']')
                 streamingService = regex.search(str(img)).group(1)
                 filmDict[movie]["streaming"].append(streamingService)
+                if streamingService not in servicesList:
+                    servicesList.append(streamingService)
 
-            '''
-            for span in spans:
-                # if span.text == "The Skin I Live In":
-                print(span)
-            '''
-            #title = filmSoup.find("span", class_="header-title")
-            #print(title)
+            # RENTING SERVICES
+            rentSoup = soup.find("div", class_="buybox-row rent inline")
+            if rentSoup is None:
+                imgs = ['alt="None"']
+            else:
+                imgs = rentSoup.find_all("img")
+            filmDict[movie]["rent"] = []
+            for img in imgs:
+                #print(img)
+                regex = re.compile('alt=["\'](.*?)["\']')
+                rentingService = regex.search(str(img)).group(1)
+                filmDict[movie]["rent"].append(rentingService)
+                if rentingService not in servicesList:
+                    servicesList.append(rentingService)
 
         current += 1
 
@@ -112,6 +124,16 @@ def justwatchCompare(filmList):
             print("Can be streamed on :")
             for stream in filmDict[film]["streaming"]:
                 print(stream)
+        if filmDict[film]["rent"][0] == "None":
+            print("Can't be rented")
+        else:
+            print("Can be rented on :")
+            for rent in filmDict[movie]["rent"]:
+                print(rent)
+
+    print("\n\nThe following services were found while scanning the film list:")
+    for service in servicesList:
+        print(service)
 
 
 if __name__ == "__main__":
