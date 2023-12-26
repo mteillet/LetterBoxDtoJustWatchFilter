@@ -7,7 +7,9 @@ def main():
     '''
     Main Function that will be replaced with frontend / gui call
     '''
-    letterBoxdListLink = 'https://letterboxd.com/mteillet/list/solo-watch-list/'
+    #letterBoxdListLink = 'https://letterboxd.com/mteillet/list/solo-watch-list/'
+    #letterBoxdListLink = 'https://letterboxd.com/mteillet/list/need-to-watch/'
+    letterBoxdListLink = 'https://boxd.it/jm3pY'
     # Getting the list
     filmList = getList(letterBoxdListLink)
     # Print only if you need to debug what's been found in the letterboxd parsing
@@ -55,7 +57,7 @@ def justwatchCompare(filmList):
     justWatchURL = 'https://www.justwatch.com/fr'
     
     # Temp test on single movie
-    #filmList = ["boyhood", "the-skin-i-live-in", "kairo", "fargo"]
+    # filmList = ["boyhood", "the-skin-i-live-in", "kairo", "fargo"]
 
     filmDict = {}
     servicesList = []
@@ -116,20 +118,26 @@ def justwatchCompare(filmList):
 
         current += 1
 
+    return(filmDict, servicesList)
+
+def printInfosOnJustWatchList(filmDict):
     for film in filmDict:
-        print("\n%s on JustWatch" % filmDict[film]["jwTitle"])
-        if filmDict[film]["streaming"][0] == "None":
-            print("Can't be streamed")
+        if filmDict[film]["jwTitle"] == "NOT FOUND":
+            print("\nERROR, couldn't find %s on just watch" % film)
         else:
-            print("Can be streamed on :")
-            for stream in filmDict[film]["streaming"]:
-                print(stream)
-        if filmDict[film]["rent"][0] == "None":
-            print("Can't be rented")
-        else:
-            print("Can be rented on :")
-            for rent in filmDict[movie]["rent"]:
-                print(rent)
+            print("\n%s on JustWatch" % filmDict[film]["jwTitle"])
+            if filmDict[film]["streaming"][0] == "None":
+                print("Can't be streamed")
+            else:
+                print("Can be streamed on :")
+                for stream in filmDict[film]["streaming"]:
+                    print(stream)
+            if filmDict[film]["rent"][0] == "None":
+                print("Can't be rented")
+            else:
+                print("Can be rented on :")
+                for rent in filmDict[movie]["rent"]:
+                    print(rent)
 
     print("\n\nThe following services were found while scanning the film list:")
     for service in servicesList:
