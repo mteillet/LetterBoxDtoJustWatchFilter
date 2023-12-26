@@ -11,7 +11,7 @@ def main():
     # Getting the list
     filmList = getList(letterBoxdListLink)
     # Print only if you need to debug what's been found in the letterboxd parsing
-    logsLetterBoxData(filmList)
+    #logsLetterBoxData(filmList)
     # Comparing with justwatch database
     justwatchCompare(filmList)
 
@@ -55,12 +55,13 @@ def justwatchCompare(filmList):
     justWatchURL = 'https://www.justwatch.com/fr'
     
     # Temp test on single movie
-    filmList = ["boyhood", "the-skin-i-live-in", "fargo"]
+    #filmList = ["boyhood", "the-skin-i-live-in", "kairo", "fargo"]
 
     filmDict = {}
 
     current = 1
     for movie in filmList:
+        print("Scanning %i / %i, ---> %s" % (current, len(filmList), movie))
         filmDict[movie] = {}
         # Get the letterboxd film page
         justWatchLink = "%s/recherche?q=%s" % (justWatchURL, movie.replace("-", " "))
@@ -79,6 +80,19 @@ def justwatchCompare(filmList):
                 filmDict[movie]["jwTitle"] = spanTitle.text
             except IndexError:
                 filmDict[movie]["jwTitle"] = "NOT FOUND"
+            streamSoup = soup.find("div", class_="buybox-row stream inline")
+            # In case ne streaming service is available
+            if streamSoup is None:
+                imgs = ['alt="None"']
+            else:
+                imgs = streamSoup.find_all("img")
+            #print(streamSoup)
+            filmDict[movie]["streaming"] = []
+            for img in imgs:
+                #print(img)
+                regex = re.compile('alt=["\'](.*?)["\']')
+                streamingService = regex.search(str(img)).group(1)
+                filmDict[movie]["streaming"].append(streamingService)
 
             '''
             for span in spans:
@@ -88,11 +102,16 @@ def justwatchCompare(filmList):
             #title = filmSoup.find("span", class_="header-title")
             #print(title)
 
-        print("Scanning %i / %i" % (current, len(filmList)))
         current += 1
 
     for film in filmDict:
-        print("%s is %s on JustWatch" % (film, filmDict[film]["jwTitle"]))
+        print("\n%s on JustWatch" % filmDict[film]["jwTitle"])
+        if filmDict[film]["streaming"][0] == "None":
+            print("Can't be streamed")
+        else:
+            print("Can be streamed on :")
+            for stream in filmDict[film]["streaming"]:
+                print(stream)
 
 
 if __name__ == "__main__":
