@@ -55,32 +55,44 @@ def justwatchCompare(filmList):
     justWatchURL = 'https://www.justwatch.com/fr'
     
     # Temp test on single movie
-    filmList = ["the-skin-i-live-in"]
+    filmList = ["boyhood", "the-skin-i-live-in", "fargo"]
 
-    # TODO !!!
-    # Need to test searching on justwatch directly
+    filmDict = {}
 
+    current = 1
     for movie in filmList:
+        filmDict[movie] = {}
         # Get the letterboxd film page
         justWatchLink = "%s/recherche?q=%s" % (justWatchURL, movie.replace("-", " "))
         justWatchSearch = requests.get(justWatchLink)
 
         # Check there was no error getting the list 
         if justWatchSearch.status_code != 200:
-            return print("ERROR LOADING THE LINK")
+            filmDict[movie]["Error"] = True
+        else:
+            filmDict[movie]["Error"] = False
         
-        soup = BeautifulSoup(justWatchSearch.content, features="html.parser")
-        filmSoup = soup.find_all("div", class_="title-list-row__column")
-        spanTitle = filmSoup[1].find("span", class_="header-title")
-        print(spanTitle.text)
+            soup = BeautifulSoup(justWatchSearch.content, features="html.parser")
+            filmSoup = soup.find_all("div", class_="title-list-row__column")
+            try :
+                spanTitle = filmSoup[1].find("span", class_="header-title")
+                filmDict[movie]["jwTitle"] = spanTitle.text
+            except IndexError:
+                filmDict[movie]["jwTitle"] = "NOT FOUND"
 
-        '''
-        for span in spans:
-            # if span.text == "The Skin I Live In":
-            print(span)
-        '''
-        #title = filmSoup.find("span", class_="header-title")
-        #print(title)
+            '''
+            for span in spans:
+                # if span.text == "The Skin I Live In":
+                print(span)
+            '''
+            #title = filmSoup.find("span", class_="header-title")
+            #print(title)
+
+        print("Scanning %i / %i" % (current, len(filmList)))
+        current += 1
+
+    for film in filmDict:
+        print("%s is %s on JustWatch" % (film, filmDict[film]["jwTitle"]))
 
 
 if __name__ == "__main__":
