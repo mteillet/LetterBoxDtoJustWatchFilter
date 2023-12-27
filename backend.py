@@ -15,7 +15,8 @@ def main():
     # Print only if you need to debug what's been found in the letterboxd parsing
     #logsLetterBoxData(filmList)
     # Comparing with justwatch database
-    justwatchCompare(filmList)
+    filmDict, servicesList = justwatchCompare(filmList)
+    printInfosOnJustWatchList(filmDict, servicesList)
 
 def getList(listLink):
     '''
@@ -57,7 +58,7 @@ def justwatchCompare(filmList):
     justWatchURL = 'https://www.justwatch.com/fr'
     
     # Temp test on single movie
-    # filmList = ["boyhood", "the-skin-i-live-in", "kairo", "fargo"]
+    #filmList = ["boyhood", "the-skin-i-live-in", "kairo", "fargo", "yi-yi", "possession", "kanikosen"]
 
     filmDict = {}
     servicesList = []
@@ -77,15 +78,31 @@ def justwatchCompare(filmList):
             filmDict[movie]["Error"] = False
         
             soup = BeautifulSoup(justWatchSearch.content, features="html.parser")
-            filmSoup = soup.find_all("div", class_="title-list-row__column")
+            firstRow = soup.find("div", class_="title-list-row__row")
+            #print(firstRow)
+            if firstRow is not None:
+                filmSoup = firstRow.find("a", class_="title-list-row__column-header")
+            else:
+                #print("None found for %s" % movie)
+                filmSoup = None
+            # print(filmSoup)
+            #filmSoup = firstRow.find("article", class_="buybox")
+            # Try except in case nothing exists no film is listed for this search
             try :
-                spanTitle = filmSoup[1].find("span", class_="header-title")
+                spanTitle = filmSoup.find("span", class_="header-title")
                 filmDict[movie]["jwTitle"] = spanTitle.text
-            except IndexError:
+            except AttributeError:
                 filmDict[movie]["jwTitle"] = "NOT FOUND"
             
             # STREAMING SERVICES
-            streamSoup = soup.find("div", class_="buybox-row stream inline")
+            # Checking only first row in order to make sure if a service (stream or rent)
+            # is missing, it does not return the results from the second row
+            # Try except in case nothing exists no film is listed for this search
+            try:
+                filmSoup = firstRow.find("article", class_="buybox")
+                streamSoup = filmSoup.find("div", class_="buybox-row stream inline")
+            except AttributeError:
+                streamSoup = None
             # In case ne streaming service is available
             if streamSoup is None:
                 imgs = ['alt="None"']
@@ -120,7 +137,7 @@ def justwatchCompare(filmList):
 
     return(filmDict, servicesList)
 
-def printInfosOnJustWatchList(filmDict):
+def printInfosOnJustWatchList(filmDict, servicesList):
     for film in filmDict:
         if filmDict[film]["jwTitle"] == "NOT FOUND":
             print("\nERROR, couldn't find %s on just watch" % film)
@@ -136,7 +153,7 @@ def printInfosOnJustWatchList(filmDict):
                 print("Can't be rented")
             else:
                 print("Can be rented on :")
-                for rent in filmDict[movie]["rent"]:
+                for rent in filmDict[film]["rent"]:
                     print(rent)
 
     print("\n\nThe following services were found while scanning the film list:")
