@@ -7,9 +7,9 @@ def main():
     '''
     Main Function that will be replaced with frontend / gui call
     '''
-    #letterBoxdListLink = 'https://letterboxd.com/mteillet/list/solo-watch-list/'
+    letterBoxdListLink = 'https://letterboxd.com/mteillet/list/solo-watch-list/'
     #letterBoxdListLink = 'https://letterboxd.com/mteillet/list/need-to-watch/'
-    letterBoxdListLink = 'https://boxd.it/jm3pY'
+    #letterBoxdListLink = 'https://boxd.it/jm3pY'
     # Getting the list
     filmList = getList(letterBoxdListLink)
     # Print only if you need to debug what's been found in the letterboxd parsing
@@ -28,10 +28,28 @@ def getList(listLink):
     if listPage.status_code != 200:
         return print("ERROR LOADING THE LINK")
 
-    soup = BeautifulSoup(listPage.content ,features="html.parser")
-    filmSoup = (soup.find_all("li", class_="poster-container"))
+    # Trying to find other pages if the list contains multiple pages
+    current = 1
+    pageSoup = ["filmContainer"]
+    fetchedFilmsContainers = []
+    # In case the URL was shortened
+    fullURL = (requests.get(listLink).url)
+    while len(pageSoup) >> 0:
+        newLink = "%spage/%i/" % (fullURL, current)
+        listPage = requests.get(newLink)
+        if listPage.status_code != 200:
+            return("ERROR LOADING URL : %s" % newLink)
+            break
+        soup = BeautifulSoup(listPage.content, features="html.parser")
+        pageSoup = (soup.find_all("li", class_="poster-container"))
+        if len(pageSoup) >> 0:
+            fetchedFilmsContainers += pageSoup
+        current += 1
+
+    #soup = BeautifulSoup(listPage.content ,features="html.parser")
+    #filmSoup = (soup.find_all("li", class_="poster-container"))
     filmList = []
-    for film in filmSoup:
+    for film in fetchedFilmsContainers:
         #print(film)
         posterContainer = film.find("div", class_="really-lazy-load")
         #print(posterContainer.find("div", class_="data-film-slug"))
