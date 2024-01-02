@@ -16,6 +16,7 @@ class LoadingScreen(QtWidgets.QWidget):
         # Widgets
         self.title = QtWidgets.QLabel("Paste the link to a LetterBoxD list")
         self.link = QtWidgets.QLineEdit("")
+        self.link.returnPressed.connect(self.startScan)
         self.scanBtn = QtWidgets.QPushButton("Scan List")
         self.scanBtn.clicked.connect(self.startScan)
 
@@ -76,7 +77,7 @@ class LoadingPopup(QtWidgets.QDialog):
         self.setWindowTitle("Letter Box D list to Just Watch Availability")
         self.setStyleSheet("color: white; background-color: rgb(30,35,45)")
 
-        self.setWindowTitle("Loading Popup")
+        self.setWindowTitle("Comparing your list to JustWatch")
         self.setGeometry(300, 300, 300, 100)
 
         self.initUI()
