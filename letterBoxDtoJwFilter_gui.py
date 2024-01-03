@@ -22,7 +22,7 @@ class LoadingScreen(QtWidgets.QWidget):
 
 
         # Layouts
-        layout = QtWidgets.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.titleLayout = QtWidgets.QHBoxLayout()
         self.linkLayout = QtWidgets.QHBoxLayout()
@@ -44,11 +44,11 @@ class LoadingScreen(QtWidgets.QWidget):
         self.mainLayout.addLayout(self.btnLayout)
         self.mainLayout.addStretch()
 
-        layout.addStretch()
-        layout.addLayout(self.mainLayout)
-        layout.addStretch()
+        self.layout.addStretch()
+        self.layout.addLayout(self.mainLayout)
+        self.layout.addStretch()
 
-        self.setLayout(layout)
+        self.setLayout(self.layout)
 
     ###############################
     # Code for the Slot functions #
@@ -67,8 +67,22 @@ class LoadingScreen(QtWidgets.QWidget):
         # Connect the progress signal to the set_progress method
         self.worker_thread = WorkerThread(self.letterBoxLink)
         self.worker_thread.progress_update.connect(self.loading_popup.set_progress)
-        self.worker_thread.finished.connect(self.loading_popup.close_popup)
+        self.worker_thread.progress_finished.connect(self.loading_popup.close_popup)
+        self.worker_thread.progress_finished.connect(self.updateMainWindow)
         self.worker_thread.start()
+
+    def updateMainWindow(self, lbdList, filmDict, servicesList):
+        print("DONE SCANNING HEHEHE")
+        self.clearLayout()
+
+    def clearLayout(self):
+        while self.layout().count():
+            item = self.layout().takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+            else:
+                self.clear_layout(item.layout())
 
 
 class LoadingPopup(QtWidgets.QDialog):
@@ -97,10 +111,6 @@ class LoadingPopup(QtWidgets.QDialog):
 
         self.setModal(True)
 
-    def beginScan(self, lbdList):
-        #print(lbdList)
-        filmDict, servicesList = justwatchCompareGui(lbdList)
-
     def set_progress(self, value, info):
         self.loading_bar.setValue(value)
         self.movie_label.setText("Scanning : %s" % info)
@@ -110,6 +120,7 @@ class LoadingPopup(QtWidgets.QDialog):
 
 class WorkerThread(QtCore.QThread):
     progress_update = QtCore.pyqtSignal(int, str)
+    progress_finished = QtCore.pyqtSignal(list, dict, list)
 
     def __init__(self, letterBoxLink):
         super(WorkerThread, self).__init__()
@@ -119,9 +130,9 @@ class WorkerThread(QtCore.QThread):
         lbdList = getList(self.letterBoxLink)
 
         # Call justwatchCompareGui and let it handle the iteration and progress signals
-        justwatchCompareGui(lbdList, self.progress_update)
+        filmDict, servicesList = justwatchCompareGui(lbdList, self.progress_update)
 
-        self.finished.emit()  # Emit finished signal when the task is complete
+        self.progress_finished.emit(lbdList, filmDict, servicesList)  # Emit finished signal when the task is complete
 
 
 if __name__ == "__main__":
