@@ -72,23 +72,73 @@ class LoadingScreen(QtWidgets.QWidget):
         self.worker_thread.start()
 
     def updateMainWindow(self, lbdList, filmDict, servicesList):
-        print("DONE SCANNING HEHEHE")
-        self.clearLayout()
+        print("DONE SCANNING")
+        self.lbdList = lbdList
+        self.filmDict = filmDict
+        self.servicesList = servicesList
+        self.result = FilmResults()
+        self.result.show()
+        self.hide()
 
-    def clearLayout(self):
-        while self.layout().count():
-            item = self.layout().takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-            else:
-                self.clear_layout(item.layout())
+class FilmResults(QtWidgets.QWidget):
+    def __init__(self):
+        super(FilmResults, self).__init__()
+        self.setWindowTitle("Scan Results")
+        self.setStyleSheet("color: white; background-color: rgb(30,35,45)")
+        self.setGeometry(300, 100, 1280, 720)
+
+        self.initUI()
+
+    def initUI(self):
+        # Side pannel contents
+        self.sidePannelLayout = QtWidgets.QVBoxLayout()
+        self.streamOrRent = QtWidgets.QLabel("Do you want to Stream or Rent movies :")
+        self.streamOrRentSelect = QtWidgets.QComboBox()
+        items = ["Stream", "Rent", "Both"]
+        self.streamOrRentSelect.addItems(items)
+        self.streamOrRentSelect.currentIndexChanged.connect(self.handleStreamOrRent)
+
+        servicesLayout = QtWidgets.QVBoxLayout()
+        servicesLabel = QtWidgets.QLabel("Check your streaming services :")
+        servicesLayout.addWidget(servicesLabel)
+        streamingServicesList = []
+        for service in widget.servicesList:
+            self.currentWidget = QtWidgets.QCheckBox(service)
+            streamingServicesList.append(self.currentWidget)
+            servicesLayout.addWidget(self.currentWidget)
+
+        # Side Pannel Layout
+        self.sidePannelGroupBox = QtWidgets.QGroupBox()
+        self.leftSidePannel = QtWidgets.QDockWidget()        
+        self.leftSidePannel.setFeatures(QtWidgets.QDockWidget.DockWidgetMovable)
+        self.leftSidePannel.setWidget(self.sidePannelGroupBox)
+        self.leftSidePannel.show()
+        self.sidePannelGroupBox.setLayout(self.sidePannelLayout)
+        self.sidePannelLayout.addWidget(self.streamOrRent)
+        self.sidePannelLayout.addWidget(self.streamOrRentSelect)
+        self.sidePannelLayout.addStretch()
+        self.sidePannelLayout.addLayout(servicesLayout)
+        self.sidePannelLayout.addStretch()
+
+
+        
+        centerLayout = QtWidgets.QHBoxLayout()
+        centerLayout.addWidget(self.leftSidePannel)
+        centerLayout.addWidget(QtWidgets.QLabel("Center Layout"))
+        centerLayout.addStretch()
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(centerLayout)
+        self.setLayout(layout)
+
+    def handleStreamOrRent(self, index):
+        selected_item = self.sender().currentText()
+        print("Selected Item : %s" % selected_item)
 
 
 class LoadingPopup(QtWidgets.QDialog):
     def __init__(self):
         super(LoadingPopup, self).__init__()
-        self.setWindowTitle("Letter Box D list to Just Watch Availability")
         self.setStyleSheet("color: white; background-color: rgb(30,35,45)")
 
         self.setWindowTitle("Comparing your list to JustWatch")
