@@ -107,6 +107,13 @@ class FilmResults(QtWidgets.QWidget):
             streamingServicesList.append(self.currentWidget)
             servicesLayout.addWidget(self.currentWidget)
 
+        # Create a scroll area and set its widget to the servicesLayout
+        scrollArea = QtWidgets.QScrollArea()
+        scrollArea.setWidgetResizable(True)
+        scrollAreaWidget = QtWidgets.QWidget()
+        scrollAreaWidget.setLayout(servicesLayout)
+        scrollArea.setWidget(scrollAreaWidget)
+
         # Side Pannel Layout
         self.sidePannelGroupBox = QtWidgets.QGroupBox()
         self.leftSidePannel = QtWidgets.QDockWidget()        
@@ -116,9 +123,9 @@ class FilmResults(QtWidgets.QWidget):
         self.sidePannelGroupBox.setLayout(self.sidePannelLayout)
         self.sidePannelLayout.addWidget(self.streamOrRent)
         self.sidePannelLayout.addWidget(self.streamOrRentSelect)
-        self.sidePannelLayout.addStretch()
-        self.sidePannelLayout.addLayout(servicesLayout)
-        self.sidePannelLayout.addStretch()
+        #self.sidePannelLayout.addStretch()
+        self.sidePannelLayout.addWidget(scrollArea)
+        #self.sidePannelLayout.addStretch()
 
 
         
