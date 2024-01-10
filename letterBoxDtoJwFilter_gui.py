@@ -90,23 +90,32 @@ class FilmResults(QtWidgets.QWidget):
         self.initUI()
 
     def initUI(self):
+        ###############
+        #   WIDGETS   #
+        ###############
         # Side pannel contents
         self.sidePannelLayout = QtWidgets.QVBoxLayout()
         self.streamOrRent = QtWidgets.QLabel("Do you want to Stream or Rent movies :")
         self.streamOrRentSelect = QtWidgets.QComboBox()
         items = ["Stream", "Rent", "Both"]
         self.streamOrRentSelect.addItems(items)
+        self.streamOrRentSelect.setCurrentIndex(2)
         self.streamOrRentSelect.currentIndexChanged.connect(self.handleStreamOrRent)
 
         servicesLayout = QtWidgets.QVBoxLayout()
         servicesLabel = QtWidgets.QLabel("Check your streaming services :")
         servicesLayout.addWidget(servicesLabel)
-        streamingServicesList = []
+        self.streamingServicesList = []
+        self.selectedServices = []
+        current = 0
         for service in widget.servicesList:
             self.currentWidget = QtWidgets.QCheckBox(service)
-            streamingServicesList.append(self.currentWidget)
+            self.currentWidget.setChecked(True)
+            self.streamingServicesList.append(self.currentWidget)
             servicesLayout.addWidget(self.currentWidget)
-
+            self.currentWidget.stateChanged.connect(self.handleStreamServicesChange)
+            self.selectedServices.append(current)
+            current += 1
         # Create a scroll area and set its widget to the servicesLayout
         scrollArea = QtWidgets.QScrollArea()
         scrollArea.setWidgetResizable(True)
@@ -114,6 +123,9 @@ class FilmResults(QtWidgets.QWidget):
         scrollAreaWidget.setLayout(servicesLayout)
         scrollArea.setWidget(scrollAreaWidget)
 
+        ##############
+        #   LAYOUT   #
+        ##############
         # Side Pannel Layout
         self.sidePannelGroupBox = QtWidgets.QGroupBox()
         self.leftSidePannel = QtWidgets.QDockWidget()        
@@ -123,12 +135,8 @@ class FilmResults(QtWidgets.QWidget):
         self.sidePannelGroupBox.setLayout(self.sidePannelLayout)
         self.sidePannelLayout.addWidget(self.streamOrRent)
         self.sidePannelLayout.addWidget(self.streamOrRentSelect)
-        #self.sidePannelLayout.addStretch()
         self.sidePannelLayout.addWidget(scrollArea)
-        #self.sidePannelLayout.addStretch()
 
-
-        
         centerLayout = QtWidgets.QHBoxLayout()
         centerLayout.addWidget(self.leftSidePannel)
         centerLayout.addWidget(QtWidgets.QLabel("Center Layout"))
@@ -137,6 +145,27 @@ class FilmResults(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(centerLayout)
         self.setLayout(layout)
+
+        self.filmDictVsServices()
+
+    def filmDictVsServices(self):
+        '''
+        Comparing the checked services and streaming options from the user
+        vs the film dict in order to display only what's relevant
+        '''
+        print("film dict vs services")
+
+    def handleStreamServicesChange(self):
+        '''
+        Creates a list of indices matching the services selected by the user
+        '''
+        self.selectedServices = []
+        current = 0
+        for i in self.streamingServicesList:
+            if i.isChecked():
+                self.selectedServices.append(current)
+            current += 1
+        print(self.selectedServices)
 
     def handleStreamOrRent(self, index):
         selected_item = self.sender().currentText()
