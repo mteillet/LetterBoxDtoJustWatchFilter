@@ -154,6 +154,19 @@ class FilmResults(QtWidgets.QWidget):
         vs the film dict in order to display only what's relevant
         '''
         print("film dict vs services")
+        streamOrRentSelection = self.checkStreamOrRent()
+        if streamOrRentSelection == "Stream":
+            print("Ignoring Rent")
+        elif streamOrRentSelection == "Rent":
+            print("Ignoring Stream")
+        else:
+            print("List both Stream Or Rent")
+
+    def checkStreamOrRent(self):
+        '''
+        Returns if the user chose to stream, rent, or both
+        '''
+        return(self.streamOrRentSelect.currentText())
 
     def handleStreamServicesChange(self):
         '''
@@ -165,11 +178,14 @@ class FilmResults(QtWidgets.QWidget):
             if i.isChecked():
                 self.selectedServices.append(current)
             current += 1
-        print(self.selectedServices)
+
+        #print(self.selectedServices)
+        self.filmDictVsServices()
 
     def handleStreamOrRent(self, index):
         selected_item = self.sender().currentText()
-        print("Selected Item : %s" % selected_item)
+        #print("Selected Item : %s" % selected_item)
+        self.filmDictVsServices()
 
 
 class LoadingPopup(QtWidgets.QDialog):
