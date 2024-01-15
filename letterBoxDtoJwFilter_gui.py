@@ -153,14 +153,44 @@ class FilmResults(QtWidgets.QWidget):
         Comparing the checked services and streaming options from the user
         vs the film dict in order to display only what's relevant
         '''
-        print("film dict vs services")
         streamOrRentSelection = self.checkStreamOrRent()
-        if streamOrRentSelection == "Stream":
-            print("Ignoring Rent")
-        elif streamOrRentSelection == "Rent":
-            print("Ignoring Stream")
-        else:
-            print("List both Stream Or Rent")
+        streamingDict = {}
+        rentingDict = {}
+
+        for i in self.selectedServices:
+            # Retrieve Streaming service name
+            streamService = self.streamingServicesList[int(i)].text()
+            if streamOrRentSelection == "Stream" or streamOrRentSelection == "Both":
+                streamingDict[streamService] = []
+                for film in widget.filmDict:
+                    if streamService in widget.filmDict[film]["streaming"]:
+                        #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
+                        streamingDict[streamService].append(widget.filmDict[film]["jwTitle"])
+            elif streamOrRentSelection == "Rent" or streamOrRentSelection == "Both":
+                rentingDict[streamService] = []
+                for film in widget.filmDict:
+                    if streamService in widget.filmDict[film]["rent"]:
+                        #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
+                        rentingDict[streamService].append(widget.filmDict[film]["jwTitle"])
+
+        self.cliDebugResults(streamingDict, rentingDict)
+
+        # Build UI widgets using the streaming and renting Dict
+        
+
+    def cliDebugResults(self, streamingDict, rentingDict):
+        '''
+        Use for debugging purposes, will print the fetched results
+        '''
+        for platform in streamingDict:
+            print("The following are available on %s" % platform)
+            for movie in streamingDict[platform]:
+                print(" -- %s" % movie)
+        for platform in rentingDict:
+            print("The following are available on %s" % platform)
+            for movie in rentingDict[platform]:
+                print(" -- %s" % movie)
+
 
     def checkStreamOrRent(self):
         '''
