@@ -137,13 +137,13 @@ class FilmResults(QtWidgets.QWidget):
         self.sidePannelLayout.addWidget(self.streamOrRentSelect)
         self.sidePannelLayout.addWidget(scrollArea)
 
-        centerLayout = QtWidgets.QHBoxLayout()
-        centerLayout.addWidget(self.leftSidePannel)
-        centerLayout.addWidget(QtWidgets.QLabel("Center Layout"))
-        centerLayout.addStretch()
+        self.centerLayout = QtWidgets.QHBoxLayout()
+        self.centerLayout.addWidget(self.leftSidePannel)
+        #self.centerLayout.addWidget(QtWidgets.QLabel("Center Layout"))
+        #self.centerLayout.addStretch()
 
         layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(centerLayout)
+        layout.addLayout(self.centerLayout)
         self.setLayout(layout)
 
         self.filmDictVsServices()
@@ -173,10 +173,11 @@ class FilmResults(QtWidgets.QWidget):
                         #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
                         rentingDict[streamService].append(widget.filmDict[film]["jwTitle"])
 
-        self.cliDebugResults(streamingDict, rentingDict)
+        # For debugging purposes
+        #self.cliDebugResults(streamingDict, rentingDict)
 
         # Build UI widgets using the streaming and renting Dict
-        
+        self.buildFilmUI(streamingDict, rentingDict)
 
     def cliDebugResults(self, streamingDict, rentingDict):
         '''
@@ -190,6 +191,34 @@ class FilmResults(QtWidgets.QWidget):
             print("The following are available on %s" % platform)
             for movie in rentingDict[platform]:
                 print(" -- %s" % movie)
+
+    def buildFilmUI(self, streamingDict, rentingDict):
+        '''
+        Responsible for building the film and found services UI
+        '''
+        # Looping over the films contained in the streamingDict
+        allServicesLayout = QtWidgets.QVBoxLayout()
+        for service in streamingDict:
+            # If list associated to service is not empty
+            if streamingDict[service] and service != "None":
+                currentServiceLayout = QtWidgets.QVBoxLayout()
+                serviceLabel = QtWidgets.QLabel("%s Streaming:" % service)
+                serviceNameLayout = QtWidgets.QHBoxLayout()
+                serviceNameLayout.addWidget(serviceLabel)
+                serviceNameLayout.addStretch()
+                moviesLayout = QtWidgets.QHBoxLayout()
+                for movie in streamingDict[service]:
+                    movieName = QtWidgets.QLabel(movie)
+                    moviesLayout.addWidget(movieName)
+                    moviesLayout.addWidget(QVLine())
+                moviesLayout.addStretch()
+                currentServiceLayout.addLayout(serviceNameLayout)
+                currentServiceLayout.addLayout(moviesLayout)
+                currentServiceLayout.addWidget(QHLine())
+                # Adding the current service layout to a layout containing all of them
+                allServicesLayout.addLayout(currentServiceLayout)
+        # Adding the build blocks to the self.centerLayout
+        self.centerLayout.addLayout(allServicesLayout)
 
 
     def checkStreamOrRent(self):
@@ -266,6 +295,24 @@ class WorkerThread(QtCore.QThread):
 
         self.progress_finished.emit(lbdList, filmDict, servicesList)  # Emit finished signal when the task is complete
 
+class QVLine(QtWidgets.QFrame):
+    '''
+    Simple class to draw separators between the light layouts - VERTICAL
+    '''
+    def __init__(self):
+        super(QVLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.VLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
+
+
+class QHLine(QtWidgets.QFrame):
+    '''
+    Simple class to draw separators between the light layouts - HORIZONTAL
+    '''
+    def __init__(self):
+        super(QHLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.HLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
