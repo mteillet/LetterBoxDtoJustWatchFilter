@@ -196,8 +196,10 @@ class FilmResults(QtWidgets.QWidget):
         '''
         Responsible for building the film and found services UI
         '''
+        if hasattr(self, "allServicesLayout"):
+            self.clearLayout(self.allServicesLayout)
         # Looping over the films contained in the streamingDict
-        allServicesLayout = QtWidgets.QVBoxLayout()
+        self.allServicesLayout = QtWidgets.QVBoxLayout()
         for service in streamingDict:
             # If list associated to service is not empty
             if streamingDict[service] and service != "None":
@@ -216,10 +218,21 @@ class FilmResults(QtWidgets.QWidget):
                 currentServiceLayout.addLayout(moviesLayout)
                 currentServiceLayout.addWidget(QHLine())
                 # Adding the current service layout to a layout containing all of them
-                allServicesLayout.addLayout(currentServiceLayout)
+                self.allServicesLayout.addLayout(currentServiceLayout)
         # Adding the build blocks to the self.centerLayout
-        self.centerLayout.addLayout(allServicesLayout)
+        self.centerLayout.addLayout(self.allServicesLayout)
 
+    def clearLayout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+                widget.deleteLater()
+            else:
+                sublayout = item.layout()
+                if sublayout:
+                    self.clearLayout(sublayout)
 
     def checkStreamOrRent(self):
         '''
