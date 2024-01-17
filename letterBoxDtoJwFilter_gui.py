@@ -129,6 +129,7 @@ class FilmResults(QtWidgets.QWidget):
         # Side Pannel Layout
         self.sidePannelGroupBox = QtWidgets.QGroupBox()
         self.leftSidePannel = QtWidgets.QDockWidget()        
+        self.leftSidePannel.setFixedWidth(300)
         self.leftSidePannel.setFeatures(QtWidgets.QDockWidget.DockWidgetMovable)
         self.leftSidePannel.setWidget(self.sidePannelGroupBox)
         self.leftSidePannel.show()
