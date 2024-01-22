@@ -200,28 +200,45 @@ class FilmResults(QtWidgets.QWidget):
         if hasattr(self, "allServicesLayout"):
             self.clearLayout(self.allServicesLayout)
         # Looping over the films contained in the streamingDict
+        boldFont = QtGui.QFont()
+        boldFont.setBold(True)
+        boldFont.setPointSize(15)
         self.allServicesLayout = QtWidgets.QVBoxLayout()
         for service in streamingDict:
             # If list associated to service is not empty
             if streamingDict[service] and service != "None":
                 currentServiceLayout = QtWidgets.QVBoxLayout()
                 serviceLabel = QtWidgets.QLabel("%s Streaming:" % service)
+                serviceLabel.setFont(boldFont)
                 serviceNameLayout = QtWidgets.QHBoxLayout()
                 serviceNameLayout.addWidget(serviceLabel)
                 serviceNameLayout.addStretch()
+
+                # Movies contained in service
                 moviesLayout = QtWidgets.QHBoxLayout()
+                # Scrolling through the films
+                scrollMovieArea = QtWidgets.QScrollArea()
+                scrollMovieArea.setWidgetResizable(True)
+                scrollMovieAreaWidget = QtWidgets.QWidget()
                 for movie in streamingDict[service]:
                     movieName = QtWidgets.QLabel(movie)
                     moviesLayout.addWidget(movieName)
                     moviesLayout.addWidget(QVLine())
                 moviesLayout.addStretch()
+                scrollMovieAreaWidget.setLayout(moviesLayout)
+                scrollMovieArea.setWidget(scrollMovieAreaWidget)
                 currentServiceLayout.addLayout(serviceNameLayout)
-                currentServiceLayout.addLayout(moviesLayout)
+                currentServiceLayout.addWidget(scrollMovieArea)
                 currentServiceLayout.addWidget(QHLine())
                 # Adding the current service layout to a layout containing all of them
                 self.allServicesLayout.addLayout(currentServiceLayout)
         # Adding the build blocks to the self.centerLayout
-        self.centerLayout.addLayout(self.allServicesLayout)
+        scrollAllMovies = QtWidgets.QScrollArea()
+        scrollAllMoviesWidget = QtWidgets.QWidget()
+        scrollAllMoviesWidget.setLayout(self.allServicesLayout)
+        scrollAllMovies.setWidget(scrollAllMoviesWidget)
+        scrollAllMovies.setWidgetResizable(True)
+        self.centerLayout.addWidget(scrollAllMovies)
 
     def clearLayout(self, layout):
         while layout.count():
