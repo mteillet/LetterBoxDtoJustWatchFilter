@@ -197,13 +197,16 @@ class FilmResults(QtWidgets.QWidget):
         '''
         Responsible for building the film and found services UI
         '''
-        if hasattr(self, "allServicesLayout"):
-            self.clearLayout(self.allServicesLayout)
+        # Check if the attribute exists
+        if hasattr(self, "allMoviesContainerLayout"):
+            # Clear the layout if it exists
+            self.clearLayout(self.allMoviesContainerLayout)
         # Looping over the films contained in the streamingDict
         boldFont = QtGui.QFont()
         boldFont.setBold(True)
         boldFont.setPointSize(15)
         self.allServicesLayout = QtWidgets.QVBoxLayout()
+        self.allMoviesContainerLayout = QtWidgets.QVBoxLayout()
         for service in streamingDict:
             # If list associated to service is not empty
             if streamingDict[service] and service != "None":
@@ -238,19 +241,23 @@ class FilmResults(QtWidgets.QWidget):
         scrollAllMoviesWidget.setLayout(self.allServicesLayout)
         scrollAllMovies.setWidget(scrollAllMoviesWidget)
         scrollAllMovies.setWidgetResizable(True)
-        self.centerLayout.addWidget(scrollAllMovies)
+        # Adding the widget to a layout
+        self.allMoviesContainerLayout.addWidget(scrollAllMovies)
+        self.centerLayout.addLayout(self.allMoviesContainerLayout)
 
     def clearLayout(self, layout):
-        while layout.count():
-            item = layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.setParent(None)
-                widget.deleteLater()
-            else:
-                sublayout = item.layout()
-                if sublayout:
-                    self.clearLayout(sublayout)
+        if layout:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    #widget.setParent(None)
+                    widget.deleteLater()
+                else:
+                    self.clearLayout(item.layout())
+                    #sublayout = item.layout()
+                    #if sublayout:
+                    #    self.clearLayout(sublayout)
 
     def checkStreamOrRent(self):
         '''
