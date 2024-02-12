@@ -188,6 +188,13 @@ def justwatchCompareGui(filmList, progress_callback):
             #print(firstRow)
             if firstRow is not None:
                 filmSoup = firstRow.find("a", class_="title-list-row__column-header")
+                posterSoup = firstRow.find("div", class_= "title-poster")
+                # Isolating image
+                posterSoup = ((str(posterSoup).split(' src="'))[1])
+                poster = posterSoup.split('"/></picture>')[0]
+                #print(poster)
+                filmDict[movie]["poster"] = poster
+
             else:
                 #print("None found for %s" % movie)
                 filmSoup = None
@@ -199,6 +206,7 @@ def justwatchCompareGui(filmList, progress_callback):
                 filmDict[movie]["jwTitle"] = spanTitle.text
             except AttributeError:
                 filmDict[movie]["jwTitle"] = "NOT FOUND"
+
             
             # STREAMING SERVICES
             # Checking only first row in order to make sure if a service (stream or rent)
