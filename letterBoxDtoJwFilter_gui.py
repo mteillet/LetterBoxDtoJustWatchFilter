@@ -1,6 +1,7 @@
 # letterBoxDtoJwFilter_gui.py
 from PyQt5 import QtWidgets, QtCore, QtGui
 import sys
+import requests
 from backend import getList, justwatchCompareGui
 
 class LoadingScreen(QtWidgets.QWidget):
@@ -225,6 +226,15 @@ class FilmResults(QtWidgets.QWidget):
                 scrollMovieAreaWidget = QtWidgets.QWidget()
                 for movie in streamingDict[service]:
                     movieName = QtWidgets.QLabel(movie)
+                    for film in widget.filmDict:
+                        if widget.filmDict[film]["jwTitle"] == movie:
+                            url = widget.filmDict[film]["poster"]
+                            # Get the image data from the URL
+                            response = requests.get(url)
+                            image_data = response.content
+                            image = QtGui.QImage.fromData(image_data)
+                            pixmap = QtGui.QPixmap.fromImage(image)
+                            movieName.setPixmap(pixmap)
                     moviesLayout.addWidget(movieName)
                     moviesLayout.addWidget(QVLine())
                 moviesLayout.addStretch()
