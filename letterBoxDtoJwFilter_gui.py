@@ -111,7 +111,7 @@ class FilmResults(QtWidgets.QWidget):
         current = 0
         for service in widget.servicesList:
             self.currentWidget = QtWidgets.QCheckBox(service)
-            self.currentWidget.setChecked(True)
+            self.currentWidget.setChecked(False)
             self.streamingServicesList.append(self.currentWidget)
             servicesLayout.addWidget(self.currentWidget)
             self.currentWidget.stateChanged.connect(self.handleStreamServicesChange)
@@ -168,7 +168,7 @@ class FilmResults(QtWidgets.QWidget):
                     if streamService in widget.filmDict[film]["streaming"]:
                         #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
                         streamingDict[streamService].append(widget.filmDict[film]["jwTitle"])
-            elif streamOrRentSelection == "Rent" or streamOrRentSelection == "Both":
+            if streamOrRentSelection == "Rent" or streamOrRentSelection == "Both":
                 rentingDict[streamService] = []
                 for film in widget.filmDict:
                     if streamService in widget.filmDict[film]["rent"]:
@@ -208,6 +208,8 @@ class FilmResults(QtWidgets.QWidget):
         boldFont.setPointSize(15)
         self.allServicesLayout = QtWidgets.QVBoxLayout()
         self.allMoviesContainerLayout = QtWidgets.QVBoxLayout()
+
+        # Streaming dict
         for service in streamingDict:
             # If list associated to service is not empty
             if streamingDict[service] and service != "None":
@@ -250,6 +252,52 @@ class FilmResults(QtWidgets.QWidget):
                 currentServiceLayout.addWidget(QHLine())
                 # Adding the current service layout to a layout containing all of them
                 self.allServicesLayout.addLayout(currentServiceLayout)
+
+        for service in rentingDict:
+            # Making sure list is not empty
+            if rentingDict[service] and service != "None":
+                currentServiceLayout = QtWidgets.QVBoxLayout()
+                serviceLabel = QtWidgets.QLabel("%s Renting:" % service)
+                serviceLabel.setFont(boldFont)
+                serviceNameLayout = QtWidgets.QHBoxLayout()
+                serviceNameLayout.addWidget(serviceLabel)
+                serviceNameLayout.addStretch()
+
+                # Movies contained in service
+                moviesLayout = QtWidgets.QHBoxLayout()
+                # Scrolling through the films
+                scrollMovieArea = QtWidgets.QScrollArea()
+                scrollMovieArea.setWidgetResizable(True)
+                scrollMovieAreaWidget = QtWidgets.QWidget()
+                for movie in rentingDict[service]:
+                    posterLayout = QtWidgets.QVBoxLayout()
+                    movieName = QtWidgets.QLabel(movie)
+                    movieName.setAlignment(QtCore.Qt.AlignCenter)
+                    movieImage = QtWidgets.QLabel(movie)
+                    movieImage.setAlignment(QtCore.Qt.AlignCenter)
+                    for film in widget.filmDict:
+                        if widget.filmDict[film]["jwTitle"] == movie:
+                            image_data = widget.filmDict[film]["poster"]
+                            # Get the image data from the URL
+                            image = QtGui.QImage.fromData(image_data)
+                            pixmap = QtGui.QPixmap.fromImage(image)
+                            movieImage.setPixmap(pixmap)
+                    posterLayout.addWidget(movieImage)
+                    posterLayout.addWidget(movieName)
+                    moviesLayout.addLayout(posterLayout)
+                    moviesLayout.addWidget(QVLine())
+                moviesLayout.addStretch()
+                scrollMovieAreaWidget.setLayout(moviesLayout)
+                scrollMovieArea.setWidget(scrollMovieAreaWidget)
+                scrollMovieArea.setMinimumHeight(300)
+                currentServiceLayout.addLayout(serviceNameLayout)
+                currentServiceLayout.addWidget(scrollMovieArea)
+                currentServiceLayout.addWidget(QHLine())
+                # Adding the current service layout to a layout containing all of them
+                self.allServicesLayout.addLayout(currentServiceLayout)
+
+        self.allServicesLayout.addStretch()
+
         # Adding the build blocks to the self.centerLayout
         scrollAllMovies = QtWidgets.QScrollArea()
         scrollAllMoviesWidget = QtWidgets.QWidget()
