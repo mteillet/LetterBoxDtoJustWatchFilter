@@ -191,7 +191,9 @@ def justwatchCompareGui(filmList, progress_callback):
                 posterSoup = firstRow.find("div", class_= "title-poster")
                 # Isolating image
                 posterSoup = ((str(posterSoup).split(' src="'))[1])
-                poster = posterSoup.split('"/></picture>')[0]
+                posterLink = posterSoup.split('"/></picture>')[0]
+                response = requests.get(posterLink)
+                poster = response.content
                 #print(poster)
                 filmDict[movie]["poster"] = poster
 
