@@ -225,21 +225,26 @@ class FilmResults(QtWidgets.QWidget):
                 scrollMovieArea.setWidgetResizable(True)
                 scrollMovieAreaWidget = QtWidgets.QWidget()
                 for movie in streamingDict[service]:
+                    posterLayout = QtWidgets.QVBoxLayout()
                     movieName = QtWidgets.QLabel(movie)
+                    movieName.setAlignment(QtCore.Qt.AlignCenter)
+                    movieImage = QtWidgets.QLabel(movie)
+                    movieImage.setAlignment(QtCore.Qt.AlignCenter)
                     for film in widget.filmDict:
                         if widget.filmDict[film]["jwTitle"] == movie:
-                            url = widget.filmDict[film]["poster"]
+                            image_data = widget.filmDict[film]["poster"]
                             # Get the image data from the URL
-                            response = requests.get(url)
-                            image_data = response.content
                             image = QtGui.QImage.fromData(image_data)
                             pixmap = QtGui.QPixmap.fromImage(image)
-                            movieName.setPixmap(pixmap)
-                    moviesLayout.addWidget(movieName)
+                            movieImage.setPixmap(pixmap)
+                    posterLayout.addWidget(movieImage)
+                    posterLayout.addWidget(movieName)
+                    moviesLayout.addLayout(posterLayout)
                     moviesLayout.addWidget(QVLine())
                 moviesLayout.addStretch()
                 scrollMovieAreaWidget.setLayout(moviesLayout)
                 scrollMovieArea.setWidget(scrollMovieAreaWidget)
+                scrollMovieArea.setMinimumHeight(300)
                 currentServiceLayout.addLayout(serviceNameLayout)
                 currentServiceLayout.addWidget(scrollMovieArea)
                 currentServiceLayout.addWidget(QHLine())
