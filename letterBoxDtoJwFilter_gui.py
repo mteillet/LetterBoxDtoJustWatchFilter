@@ -75,6 +75,7 @@ class LoadingScreen(QtWidgets.QWidget):
     def updateMainWindow(self, lbdList, filmDict, servicesList):
         print("DONE SCANNING")
         self.lbdList = lbdList
+        print(lbdList)
         self.filmDict = filmDict
         self.servicesList = servicesList
         self.result = FilmResults()
@@ -165,18 +166,25 @@ class FilmResults(QtWidgets.QWidget):
             if streamOrRentSelection == "Stream" or streamOrRentSelection == "Both":
                 streamingDict[streamService] = []
                 for film in widget.filmDict:
-                    if streamService in widget.filmDict[film]["streaming"]:
-                        #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
-                        streamingDict[streamService].append(widget.filmDict[film]["jwTitle"])
+                    try:
+                        if streamService in widget.filmDict[film]["streaming"]:
+                            #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
+                            streamingDict[streamService].append(widget.filmDict[film]["jwTitle"])
+                    except KeyError:
+                        print("Error for movie : %s and streaming service %s" % (film, streamService))
             if streamOrRentSelection == "Rent" or streamOrRentSelection == "Both":
                 rentingDict[streamService] = []
                 for film in widget.filmDict:
-                    if streamService in widget.filmDict[film]["rent"]:
-                        #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
-                        rentingDict[streamService].append(widget.filmDict[film]["jwTitle"])
+                    try:
+                        if streamService in widget.filmDict[film]["rent"]:
+                            #print("%s found for movie : %s" % (streamService, widget.filmDict[film]["jwTitle"]))
+                            rentingDict[streamService].append(widget.filmDict[film]["jwTitle"])
+                    except KeyError:
+                        print("Error for movie : %s and renting service %s" % (film, streamService))
 
         # For debugging purposes
-        #self.cliDebugResults(streamingDict, rentingDict)
+        self.cliDebugResults(streamingDict, rentingDict)
+        print(widget.filmDict)
 
         # Build UI widgets using the streaming and renting Dict
         self.buildFilmUI(streamingDict, rentingDict)
