@@ -1,5 +1,8 @@
 # main_controller.py
-
+import re
+from time import sleep
+import requests
+from bs4 import BeautifulSoup
 
 class Init_main_controller():
     def __init__(self, model, view):
@@ -8,9 +11,25 @@ class Init_main_controller():
         """
         self.model = model
         self.view = view
-
-        self.connect_signals()
+        self.connect_initial_signals()
+        # Calling gui build here to get the finish signal
+        self.view.build_homepage()
         self.applyStyleSheet()
+        #self.connect_signals()
+
+    def connect_initial_signals(self):
+        """
+        Connecting signals between the model and view before bulding the gui 
+        to link right away with the model
+        """
+        self.view.finished_homepageBuild.connect(self.init_model)
+
+    def init_model(self):
+        '''
+        Links the model to the corresponding gui widgets
+        '''
+        print("Signal Received")
+        self.get_letterboxd_popular_week()
 
     def connect_signals(self):
         """
@@ -19,12 +38,22 @@ class Init_main_controller():
         print("Connecting Signals")
         # self.view.btn.clicked.connect(lambda: self.updateText())
 
-    def updateText(self):
+    def get_letterboxd_popular_week(self):
         """
-        Checking controller is connected to gui
+        Getting letterboxD lists data
+        This week's popular categories
         """
-        print("btp clicked")
-        self.view.label.setText("Updated Label")
+        link = "https://letterboxd.com/lists/popular/this/week/"
+        page = requests.get(link)
+
+        # Check there was no error getting the list 
+        if page.status_code != 200:
+            return print("ERROR LOADING THE LINK")
+
+        soup = BeautifulSoup(page.content, features="html.parser")
+
+        print(soup)
+
 
     def applyStyleSheet(self):
         stylesheet = """

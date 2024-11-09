@@ -3,11 +3,12 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 
 class Main_Window(QtWidgets.QWidget):
+    finished_homepageBuild = QtCore.Signal(str)
+
     def __init__(self):
         super(Main_Window, self).__init__()
         self.setWindowTitle("LetterBoxD JustWatch Filter")
-        #self.build_gui()
-        self.build_homepage()
+        #self.build_homepage()
 
     def build_homepage(self):
         """
@@ -85,6 +86,8 @@ class Main_Window(QtWidgets.QWidget):
         self.line_5_layout.addWidget(self.musical_lbl)
 
         self.setLayout(self.layout)
+
+        self.finished_homepageBuild.emit("Done")
 
 
     def build_gui(self):
