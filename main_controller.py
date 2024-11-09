@@ -44,16 +44,34 @@ class Init_main_controller():
         This week's popular categories
         """
         link = "https://letterboxd.com/lists/popular/this/week/"
-        page = requests.get(link)
+        headers = {"User-Agent": "Mozilla/5.0"}
 
-        # Check there was no error getting the list 
-        if page.status_code != 200:
-            return print("ERROR LOADING THE LINK")
+        try:
+            response = requests.get(link, headers=headers)
+            response.raise_for_status()  # Check for HTTP errors
 
-        soup = BeautifulSoup(page.content, features="html.parser")
+            soup = BeautifulSoup(response.content, "html.parser")
+            """
+            titlelist = soup.select("h2 a")
+            for i in titlelist:
+                print(i.get_text())
+            #print(elem for elem in soup.select("h2 a"))
+            """
+            filmLists = soup.select(".list.-overlapped.-summary")[:2]
 
-        print(soup)
-
+            for section in filmLists:
+                title = section.select("h2 a")[0].get_text()
+                print(title)
+                #posters = section.select(".poster.-list.-p70.-overlapped")
+                posters = section.select("ul.poster-list.-p70.-overlapped")
+                images = [img["srcset"].split()[0] if "srcset" in img.attrs else img["src"] for img in posters[0].select("li img")]
+                #images = [img["srcset"] for img in posters[0].select("li img")]
+                print(images)
+                #print(posters)
+            
+        except requests.exceptions.RequestException as e:
+            print(f"Error loading the link: {e}")
+            return None
 
     def applyStyleSheet(self):
         stylesheet = """
