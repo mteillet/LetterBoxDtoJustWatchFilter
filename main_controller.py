@@ -1,8 +1,10 @@
 # main_controller.py
 import re
 from time import sleep
+
 import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 class Init_main_controller():
     def __init__(self, model, view):
@@ -28,8 +30,11 @@ class Init_main_controller():
         '''
         Links the model to the corresponding gui widgets
         '''
-        print("Signal Received")
-        self.get_letterboxd_popular_week()
+        # Getting the popular week list names and images, and sending them to the model
+        popular_dict = self.get_letterboxd_popular_week()
+        self.model.set_popular_list_dict(popular_dict)
+        # For debugging purposes, uncomment the following line
+        # print(self.model.get_popular_list_dict())
 
     def connect_signals(self):
         """
@@ -44,34 +49,33 @@ class Init_main_controller():
         This week's popular categories
         """
         link = "https://letterboxd.com/lists/popular/this/week/"
-        headers = {"User-Agent": "Mozilla/5.0"}
+        # Trying playwright
+        with sync_playwright() as p:
+            # Launch headless browser
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
 
-        try:
-            response = requests.get(link, headers=headers)
-            response.raise_for_status()  # Check for HTTP errors
+            page.goto(link)
 
-            soup = BeautifulSoup(response.content, "html.parser")
-            """
-            titlelist = soup.select("h2 a")
-            for i in titlelist:
-                print(i.get_text())
-            #print(elem for elem in soup.select("h2 a"))
-            """
+            # Wait for images within the poster list to load
+            page.wait_for_selector("ul.poster-list img", state="visible")
+            
+            # Get the page content after JavaScript has executed
+            html = page.content()
+            soup = BeautifulSoup(html, "html.parser")
+
+            listDict = {}
             filmLists = soup.select(".list.-overlapped.-summary")[:2]
-
             for section in filmLists:
                 title = section.select("h2 a")[0].get_text()
-                print(title)
-                #posters = section.select(".poster.-list.-p70.-overlapped")
-                posters = section.select("ul.poster-list.-p70.-overlapped")
-                images = [img["srcset"].split()[0] if "srcset" in img.attrs else img["src"] for img in posters[0].select("li img")]
-                #images = [img["srcset"] for img in posters[0].select("li img")]
-                print(images)
-                #print(posters)
-            
-        except requests.exceptions.RequestException as e:
-            print(f"Error loading the link: {e}")
-            return None
+                posters = section.select("ul.poster-list li.film-poster")
+                poster_urls = []
+                for poster in posters:
+                    poster_urls.append(poster.find("img")["src"])
+                listDict[title] = poster_urls
+
+        return listDict
+
 
     def applyStyleSheet(self):
         stylesheet = """
