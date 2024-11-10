@@ -17,7 +17,7 @@ class Init_main_controller():
         # Calling gui build here to get the finish signal
         self.view.build_homepage()
         self.applyStyleSheet()
-        #self.connect_signals()
+        self.connect_signals()
 
     def connect_initial_signals(self):
         """
@@ -45,6 +45,13 @@ class Init_main_controller():
         """
         print("Connecting Signals")
         # self.view.btn.clicked.connect(lambda: self.updateText())
+        self.view.popular_list_signal.connect(self.list_clicked)
+
+    def list_clicked(self, link):
+        """
+        Testing if we can catch the list clicked signal
+        """
+        print("Got Signal for list : %s" % link)
 
     def get_letterboxd_popular_week(self):
         """
@@ -74,6 +81,8 @@ class Init_main_controller():
             filmLists = soup.select(".list.-overlapped.-summary")[:2]
             for section in filmLists:
                 title = section.select("h2 a")[0].get_text()
+                link = section.select("a.list-link")
+                href = link[0]["href"] if link else None
                 posters = section.select("ul.poster-list li.film-poster")
                 poster_urls = []
                 for poster in posters:
@@ -82,7 +91,9 @@ class Init_main_controller():
                     img_data = requests.get(img_url).content
                     #print(img_url)
                     poster_urls.append(img_data)
-                listDict[title] = poster_urls
+                listDict[title] = {}
+                listDict[title]["posters"] = poster_urls
+                listDict[title]["link"] = href
         return listDict
 
     def applyStyleSheet(self):

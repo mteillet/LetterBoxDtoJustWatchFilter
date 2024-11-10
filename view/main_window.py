@@ -4,6 +4,7 @@ from PySide2 import QtWidgets, QtCore, QtGui
 
 class Main_Window(QtWidgets.QWidget):
     finished_homepageBuild = QtCore.Signal(str)
+    popular_list_signal = QtCore.Signal(str)
 
     def __init__(self):
         super(Main_Window, self).__init__()
@@ -94,11 +95,11 @@ class Main_Window(QtWidgets.QWidget):
         Adds the label and poster of popular this week movie lists
         """
 
-        for key, poster_urls in filmDict.items():
+        for key, data in filmDict.items():
 
             # Posters
             posterSize = QtCore.QSize(70, 105)
-            columns = len(poster_urls)
+            columns = len(data["posters"])
             overlap_amount = 15
 
             # Final image dimensions
@@ -111,7 +112,7 @@ class Main_Window(QtWidgets.QWidget):
             # Painting each poster onto the final image with x-axis overlap
             painter = QtGui.QPainter(final_pixmap)
             x = final_width - posterSize.width()
-            for url in poster_urls:
+            for url in data["posters"]:
                 poster_image = QtGui.QImage.fromData(url)
                 poster_pixmap = QtGui.QPixmap.fromImage(poster_image)
                 painter.drawPixmap(x, 0, poster_pixmap)
@@ -120,18 +121,30 @@ class Main_Window(QtWidgets.QWidget):
             icon.addPixmap(final_pixmap)
 
             # Creating custom widget for the popular lists
-            self.popularlist_btn = MovieListBtn(key, icon, final_width, final_height)
+            self.popularlist_btn = MovieListBtn(key, icon, data["link"], final_width, final_height)
+            # Adding the signal for main controller
+            self.popularlist_btn.linkSignal.connect(self.popular_signal_emission)
             # Adding it to the layout 
             self.popularListsLayout.addWidget(self.popularlist_btn)
             self.popularListsLayout.addStretch()
+
+    def popular_signal_emission(self, data):
+        """
+        Emitting the list link to the main controller
+        """
+        self.popular_list_signal.emit(data)
+
     
 
 class MovieListBtn(QtWidgets.QWidget):
     """
     Custom class for the movies display
     """
-    def __init__(self, text, icon, width, height):
+    linkSignal = QtCore.Signal(str)
+    def __init__(self, text, icon, link, width, height):
         super().__init__()
+        self.link = link
+
         self.styleNotTitle = """
             /* Labels */
             QLabel {
@@ -144,31 +157,25 @@ class MovieListBtn(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         
         # Create and set up the icon and text
-        icon_btn = QtWidgets.QPushButton()
-        icon_btn.setIcon(icon)
-        icon_btn.setIconSize(QtCore.QSize(width, height))
+        self.icon_btn = QtWidgets.QPushButton()
+        self.icon_btn.setIcon(icon)
+        self.icon_btn.setIconSize(QtCore.QSize(width, height))
+        self.icon_btn.clicked.connect(self.emit_link)
         text_label = QtWidgets.QLabel(text)
         text_label.setStyleSheet(self.styleNotTitle)
         #text_label.setAlignment(QtCore.Qt.AlignCenter)
 
         # Add icon and text in reverse order for "icon under text"
         layout.addWidget(text_label)
-        layout.addWidget(icon_btn)
+        layout.addWidget(self.icon_btn)
 
         # Set layout
-        #layout.setContentsMargins(0, 0, 0, 0)
-        #layout.setSpacing(5)
         self.setLayout(layout)
 
-        def resizeEvent(self, event):
-            """
-            Resize the icon dynamically with the button
-            """
-            button_size = self.icon_btn.size()
-            # Set the icon size to be slightly smaller than the button size
-            new_icon_size = QtCore.QSize(button_size.width() * 0.9, button_size.height() * 0.9)
-            self.icon_btn.setIconSize(new_icon_size)
-            super().resizeEvent(event)
-
+    def emit_link(self):
+        """
+        Emitting the link attached to the btn as a signal
+        """
+        self.linkSignal.emit(self.link)
 
 
