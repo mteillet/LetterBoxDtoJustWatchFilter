@@ -89,24 +89,86 @@ class Main_Window(QtWidgets.QWidget):
 
         self.finished_homepageBuild.emit("Done")
 
-
-    def build_gui(self):
+    def add_popular_week(self, filmDict):
         """
-        Call this function to begin building the base UI
+        Adds the label and poster of popular this week movie lists
         """
-        ##############
-        #   WIDGETS  #
-        ##############
-        self.label = QtWidgets.QLabel("Label")
-        self.btn = QtWidgets.QPushButton("Update")
 
-        ##############
-        #   LAYOUT   #
-        ##############
-        self.layout = QtWidgets.QVBoxLayout()
+        for key, poster_urls in filmDict.items():
 
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.btn)
+            # Posters
+            posterSize = QtCore.QSize(70, 105)
+            columns = len(poster_urls)
+            overlap_amount = 15
 
-        self.setLayout(self.layout)
+            # Final image dimensions
+            final_width = columns * posterSize.width() - (columns - 1) * overlap_amount
+            final_height = posterSize.height()
+            final_pixmap = QtGui.QPixmap(final_width, final_height)
+            final_pixmap.fill(QtCore.Qt.white)
+            icon = QtGui.QIcon()
+
+            # Painting each poster onto the final image with x-axis overlap
+            painter = QtGui.QPainter(final_pixmap)
+            x = final_width - posterSize.width()
+            for url in poster_urls:
+                poster_image = QtGui.QImage.fromData(url)
+                poster_pixmap = QtGui.QPixmap.fromImage(poster_image)
+                painter.drawPixmap(x, 0, poster_pixmap)
+                x -= posterSize.width() - overlap_amount
+            painter.end()
+            icon.addPixmap(final_pixmap)
+
+            # Creating custom widget for the popular lists
+            self.popularlist_btn = MovieListBtn(key, icon, final_width, final_height)
+            # Adding it to the layout 
+            self.popularListsLayout.addWidget(self.popularlist_btn)
+            self.popularListsLayout.addStretch()
+    
+
+class MovieListBtn(QtWidgets.QWidget):
+    """
+    Custom class for the movies display
+    """
+    def __init__(self, text, icon, width, height):
+        super().__init__()
+        self.styleNotTitle = """
+            /* Labels */
+            QLabel {
+                color: #A0A0A0;
+                font-weight: thin;
+                font-size: 11px;
+            }
+            """
+        # Set up layout
+        layout = QtWidgets.QVBoxLayout()
+        
+        # Create and set up the icon and text
+        icon_btn = QtWidgets.QPushButton()
+        icon_btn.setIcon(icon)
+        icon_btn.setIconSize(QtCore.QSize(width, height))
+        text_label = QtWidgets.QLabel(text)
+        text_label.setStyleSheet(self.styleNotTitle)
+        #text_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Add icon and text in reverse order for "icon under text"
+        layout.addWidget(text_label)
+        layout.addWidget(icon_btn)
+
+        # Set layout
+        #layout.setContentsMargins(0, 0, 0, 0)
+        #layout.setSpacing(5)
+        self.setLayout(layout)
+
+        def resizeEvent(self, event):
+            """
+            Resize the icon dynamically with the button
+            """
+            button_size = self.icon_btn.size()
+            # Set the icon size to be slightly smaller than the button size
+            new_icon_size = QtCore.QSize(button_size.width() * 0.9, button_size.height() * 0.9)
+            self.icon_btn.setIconSize(new_icon_size)
+            super().resizeEvent(event)
+
+
 

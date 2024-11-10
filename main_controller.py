@@ -36,6 +36,9 @@ class Init_main_controller():
         # For debugging purposes, uncomment the following line
         # print(self.model.get_popular_list_dict())
 
+        # Adding the dbd popular film lists to homepage
+        self.view.add_popular_week(self.model.get_popular_list_dict())
+
     def connect_signals(self):
         """
         Connecting signals between the model and view
@@ -64,6 +67,9 @@ class Init_main_controller():
             html = page.content()
             soup = BeautifulSoup(html, "html.parser")
 
+            browser.close()
+
+            # Parsing the soup to get the relevant data
             listDict = {}
             filmLists = soup.select(".list.-overlapped.-summary")[:2]
             for section in filmLists:
@@ -71,11 +77,13 @@ class Init_main_controller():
                 posters = section.select("ul.poster-list li.film-poster")
                 poster_urls = []
                 for poster in posters:
-                    poster_urls.append(poster.find("img")["src"])
+                    # poster_urls.append(poster.find("img")["src"])
+                    img_url = poster.find("img")["src"]
+                    img_data = requests.get(img_url).content
+                    #print(img_url)
+                    poster_urls.append(img_data)
                 listDict[title] = poster_urls
-
         return listDict
-
 
     def applyStyleSheet(self):
         stylesheet = """
@@ -89,6 +97,7 @@ class Init_main_controller():
             /* Labels */
             QLabel {
                 color: #E0E0E0;
+                font-weight: bold;
                 font-size: 14px;
             }
 
