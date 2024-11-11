@@ -11,7 +11,7 @@ class Main_Window(QtWidgets.QWidget):
         self.setWindowTitle("LetterBoxD JustWatch Filter")
         #self.build_homepage()
 
-    def build_homepage(self):
+    def build_homepage(self, generic_list):
         """
         Building the Home page gui
         """
@@ -26,16 +26,13 @@ class Main_Window(QtWidgets.QWidget):
         # https://letterboxd.com/lists/popular/this/week/
         self.popular_lbl = QtWidgets.QLabel("This week's popular categories : ")
         # https://letterboxd.com/search/lists/love+movies/
-        self.romance_lbl = QtWidgets.QLabel("Romance Movies :")
-        self.horror_lbl = QtWidgets.QLabel("Horror Movies :")
-        self.action_lbl = QtWidgets.QLabel("Action Movies :")
-        self.comedy_lbl = QtWidgets.QLabel("Comedy Movies :")
-        self.thriller_lbl = QtWidgets.QLabel("Thriller Movies :")
-        self.animated_lbl = QtWidgets.QLabel("Animated Movies :")
-        self.docu_lbl = QtWidgets.QLabel("Documentaries :")
-        self.sf_lbl = QtWidgets.QLabel("Science-Fiction Movies :")
-        self.biographical_lbl = QtWidgets.QLabel("True Story Movies :")
-        self.musical_lbl = QtWidgets.QLabel("Musical Movies :")
+        self.classic_lbl = QtWidgets.QLabel("Fit your taste categories :")
+        self.generic_list_btns = []
+        for key, valueDicts in generic_list.items():
+            icon, final_width, final_height = self.buildPosters(generic_list[key]["posters"])
+            self.current_list_btn = MovieListBtn(key, icon, generic_list[key]["link"], final_width, final_height)
+            self.current_list_btn.linkSignal.connect(self.popular_signal_emission)
+            self.generic_list_btns.append(self.current_list_btn)
 
         ##############
         #   LAYOUT   #
@@ -69,26 +66,52 @@ class Main_Window(QtWidgets.QWidget):
         self.popularLayout.addLayout(self.popularListsLayout)
 
         # Categories Layouts
+        self.layout.addStretch()
+        self.layout.addWidget(self.classic_lbl)
         self.layout.addLayout(self.categoriesLayout)
-        self.categoriesLayout.addLayout(self.line_1_layout)
-        self.line_1_layout.addWidget(self.romance_lbl)
-        self.line_1_layout.addWidget(self.horror_lbl)
-        self.categoriesLayout.addLayout(self.line_2_layout)
-        self.line_2_layout.addWidget(self.action_lbl)
-        self.line_2_layout.addWidget(self.comedy_lbl)
-        self.categoriesLayout.addLayout(self.line_3_layout)
-        self.line_3_layout.addWidget(self.thriller_lbl)
-        self.line_3_layout.addWidget(self.animated_lbl)
-        self.categoriesLayout.addLayout(self.line_4_layout)
-        self.line_4_layout.addWidget(self.docu_lbl)
-        self.line_4_layout.addWidget(self.sf_lbl)
-        self.categoriesLayout.addLayout(self.line_5_layout)
-        self.line_5_layout.addWidget(self.biographical_lbl)
-        self.line_5_layout.addWidget(self.musical_lbl)
+        current = 0
+        for widget in self.generic_list_btns:
+            if current % 3 == 0:
+                self.current_cat_layout = QtWidgets.QHBoxLayout()
+                self.categoriesLayout.addLayout(self.current_cat_layout)
+            self.current_cat_layout.addWidget(widget)
+            current += 1
 
         self.setLayout(self.layout)
 
         self.finished_homepageBuild.emit("Done")
+
+    def buildPosters(self, posterUrls):
+        """
+        Building the posters icons
+        """
+        posterSize = QtCore.QSize(70, 105)
+        overlap_amount = 20
+        if len(posterUrls) < 10:
+            overlap_amount *= 0.5
+        columns = len(posterUrls)
+
+        final_width = columns * posterSize.width() - (columns - 1) * overlap_amount
+        final_height = posterSize.height()
+        final_pixmap = QtGui.QPixmap(final_width, final_height)
+        final_pixmap.fill(QtCore.Qt.white)
+        icon = QtGui.QIcon()
+
+        painter = QtGui.QPainter(final_pixmap)
+        x = final_width - posterSize.width()
+        for poster in posterUrls:
+            poster_image = QtGui.QImage.fromData(poster)
+            #poster_pixmap = QtGui.QPixmap.fromImage(poster_image)
+            # Scale the image to fit within posterSize
+            poster_pixmap = QtGui.QPixmap.fromImage(poster_image).scaled(posterSize, QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
+        
+            painter.drawPixmap(x, 0, poster_pixmap)
+            x -= posterSize.width() - overlap_amount
+        painter.end()
+        icon.addPixmap(final_pixmap)
+
+        return icon, final_width, final_height
+
 
     def add_popular_week(self, filmDict):
         """
@@ -96,29 +119,7 @@ class Main_Window(QtWidgets.QWidget):
         """
 
         for key, data in filmDict.items():
-
-            # Posters
-            posterSize = QtCore.QSize(70, 105)
-            columns = len(data["posters"])
-            overlap_amount = 15
-
-            # Final image dimensions
-            final_width = columns * posterSize.width() - (columns - 1) * overlap_amount
-            final_height = posterSize.height()
-            final_pixmap = QtGui.QPixmap(final_width, final_height)
-            final_pixmap.fill(QtCore.Qt.white)
-            icon = QtGui.QIcon()
-
-            # Painting each poster onto the final image with x-axis overlap
-            painter = QtGui.QPainter(final_pixmap)
-            x = final_width - posterSize.width()
-            for url in data["posters"]:
-                poster_image = QtGui.QImage.fromData(url)
-                poster_pixmap = QtGui.QPixmap.fromImage(poster_image)
-                painter.drawPixmap(x, 0, poster_pixmap)
-                x -= posterSize.width() - overlap_amount
-            painter.end()
-            icon.addPixmap(final_pixmap)
+            icon, final_width, final_height = self.buildPosters(data["posters"])
 
             # Creating custom widget for the popular lists
             self.popularlist_btn = MovieListBtn(key, icon, data["link"], final_width, final_height)
@@ -134,7 +135,6 @@ class Main_Window(QtWidgets.QWidget):
         """
         self.popular_list_signal.emit(data)
 
-    
 
 class MovieListBtn(QtWidgets.QWidget):
     """

@@ -14,8 +14,15 @@ class Init_main_controller():
         self.model = model
         self.view = view
         self.connect_initial_signals()
+
+        # Getting the generic dict from model
+        generic_list = self.model.get_generic_list()
+        generic_list_dict = self.build_generic_lists(generic_list)
+        # Sending the results back to model bdd
+        self.model.set_generic_lists_dict(generic_list_dict)
+
         # Calling gui build here to get the finish signal
-        self.view.build_homepage()
+        self.view.build_homepage(self.model.get_generic_lists_dict())
         self.applyStyleSheet()
         self.connect_signals()
 
@@ -43,8 +50,6 @@ class Init_main_controller():
         """
         Connecting signals between the model and view
         """
-        print("Connecting Signals")
-        # self.view.btn.clicked.connect(lambda: self.updateText())
         self.view.popular_list_signal.connect(self.list_clicked)
 
     def list_clicked(self, link):
@@ -58,7 +63,7 @@ class Init_main_controller():
         Getting letterboxD lists data
         This week's popular categories
         """
-        link = "https://letterboxd.com/lists/popular/this/week/"
+        link = self.model.get_popular_link()
         # Trying playwright
         with sync_playwright() as p:
             # Launch headless browser
@@ -96,7 +101,71 @@ class Init_main_controller():
                 listDict[title]["link"] = href
         return listDict
 
+    def build_generic_lists(self, generic_list):
+        """
+        Feeding the list urls to the parser function, and building the needed
+        Dict from it
+        """
+        generic_list_dict = {}
+        for key, value in generic_list.items():
+            name, results = self.list_url_scraping(key, value)
+            generic_list_dict[key] = results
+            generic_list_dict[key]["title"] = name
+            print("Scraping for %s, %s -> DONE" % (key, value))
+
+        return generic_list_dict
+
+    def list_url_scraping(self, list_name, url):
+        """
+        Scraping the url, returns a dict containing :
+        dict = {
+            ["posters"] = [list of poster href from urls]
+            ["link"] = link to the list for when it is clicked
+        }
+        """
+        with sync_playwright() as p:
+            # Launch headless browser
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+
+            page.goto(url)
+
+            # Wait for images within the poster list to load
+            page.wait_for_selector("ul.poster-list img", state="visible")
+            sleep(0.1)
+            
+            # Get the page content after JavaScript has executed
+            html = page.content()
+            soup = BeautifulSoup(html, "html.parser")
+
+            browser.close()
+
+        # Parsing the soup to get the relevant data
+        listDict = {}
+        filmLists = soup.select(".list.-overlapped.-summary")
+        # Getting the needed data
+        title = filmLists[0].select("h2 a")[0].get_text()
+        link = filmLists[0].select("a.list-link")
+        href = link[0]["href"]
+        posters = filmLists[0].select("ul.poster-list li.film-poster")
+        poster_urls = []
+        # Getting the posters data
+        for poster in posters:
+            img_url = poster.find("img")["srcset"]
+            img_data = requests.get(img_url).content
+            poster_urls.append(img_data)
+        results = {}
+        results["posters"] = poster_urls
+        results["link"] = href
+
+        return title, results
+
+
     def applyStyleSheet(self):
+        """
+        Base StyleSheet for homepage
+        """
+        #background-color: rgb(30,35,45);
         stylesheet = """
             /* General Styling */
             QWidget {
