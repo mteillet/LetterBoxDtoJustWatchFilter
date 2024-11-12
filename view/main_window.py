@@ -19,9 +19,18 @@ class Main_Window(QtWidgets.QWidget):
         #   WIDGETS  #
         ##############
         self.welcome_lbl = QtWidgets.QLabel("Welcome to the LetterBoxD JustWatch Filter")
+        # Language Combobox
+        countries = ["", "", "", "", ""]
         self.languageCbox = QtWidgets.QComboBox()
-        self.languageCbox.addItem("French")
-        self.languageCbox.addItem("English")
+        self.languageCbox.addItems(countries)
+        #self.languageCbox.setEditable(True)
+        flags = ["france", "germany", "spain", "united-kingdom", "united-states"]
+        current = 0
+        for country in countries:
+            icon = QtGui.QIcon("./imgs/flags/%s.png" % flags[current])
+            self.languageCbox.setItemIcon(current, icon)
+            current += 1
+
         self.customList_btn = QtWidgets.QPushButton("Use your custom list")
         # Popular Lists
         self.popular_lbl = QtWidgets.QLabel("This week's popular categories : ")
@@ -167,6 +176,8 @@ class MovieListBtn(QtWidgets.QWidget):
         self.icon_btn.setIcon(icon)
         self.icon_btn.setIconSize(QtCore.QSize(width, height))
         self.icon_btn.clicked.connect(self.emit_link)
+        self.icon_btn.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        #self.icon_btn.setWidgetResizable(True)
         text_label = QtWidgets.QLabel(text)
         text_label.setStyleSheet(self.styleNotTitle)
         #text_label.setAlignment(QtCore.Qt.AlignCenter)
