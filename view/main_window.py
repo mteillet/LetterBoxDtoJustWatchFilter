@@ -23,10 +23,15 @@ class Main_Window(QtWidgets.QWidget):
         self.languageCbox.addItem("French")
         self.languageCbox.addItem("English")
         self.customList_btn = QtWidgets.QPushButton("Use your custom list")
-        # https://letterboxd.com/lists/popular/this/week/
+        # Popular Lists
         self.popular_lbl = QtWidgets.QLabel("This week's popular categories : ")
-        # https://letterboxd.com/search/lists/love+movies/
+        # Classic Lists
         self.classic_lbl = QtWidgets.QLabel("Fit your taste categories :")
+        # QScroll Area for these lists
+        self.scroll_area = QtWidgets.QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        # Container for the categories layout
+        self.scroll_content = QtWidgets.QWidget()
         self.generic_list_btns = []
         for key, valueDicts in generic_list.items():
             icon, final_width, final_height = self.buildPosters(generic_list[key]["posters"])
@@ -43,12 +48,7 @@ class Main_Window(QtWidgets.QWidget):
         self.popularLayout = QtWidgets.QVBoxLayout()
         self.popularListsLayout = QtWidgets.QHBoxLayout()
 
-        self.categoriesLayout = QtWidgets.QVBoxLayout()
-        self.line_1_layout = QtWidgets.QHBoxLayout()
-        self.line_2_layout = QtWidgets.QHBoxLayout()
-        self.line_3_layout = QtWidgets.QHBoxLayout()
-        self.line_4_layout = QtWidgets.QHBoxLayout()
-        self.line_5_layout = QtWidgets.QHBoxLayout()
+        self.categoriesLayout = QtWidgets.QVBoxLayout(self.scroll_content)
 
         # Top Bar
         self.layout.addLayout(self.topBarLayout)
@@ -68,7 +68,9 @@ class Main_Window(QtWidgets.QWidget):
         # Categories Layouts
         self.layout.addStretch()
         self.layout.addWidget(self.classic_lbl)
-        self.layout.addLayout(self.categoriesLayout)
+        self.layout.addWidget(self.scroll_area)
+
+        # Loop for classic categories layout
         current = 0
         for widget in self.generic_list_btns:
             if current % 3 == 0:
@@ -76,6 +78,10 @@ class Main_Window(QtWidgets.QWidget):
                 self.categoriesLayout.addLayout(self.current_cat_layout)
             self.current_cat_layout.addWidget(widget)
             current += 1
+
+        # Adding them to the container widget
+        self.scroll_content.setLayout(self.categoriesLayout)
+        self.scroll_area.setWidget(self.scroll_content)
 
         self.setLayout(self.layout)
 
