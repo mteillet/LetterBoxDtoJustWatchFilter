@@ -68,16 +68,21 @@ class Main_Window(QtWidgets.QWidget):
         
         # Custom List
         self.layout.addWidget(self.customList_btn)
+        self.layout.addWidget(QHLine())
 
         # Popular Movies
+        self.layout.addStretch()
         self.layout.addLayout(self.popularLayout)
         self.popularLayout.addWidget(self.popular_lbl)
         self.popularLayout.addLayout(self.popularListsLayout)
+        self.layout.addWidget(QHLine())
 
         # Categories Layouts
         self.layout.addStretch()
         self.layout.addWidget(self.classic_lbl)
         self.layout.addWidget(self.scroll_area)
+        self.layout.addWidget(QHLine())
+        self.layout.addStretch()
 
         # Loop for classic categories layout
         current = 0
@@ -194,5 +199,25 @@ class MovieListBtn(QtWidgets.QWidget):
         Emitting the link attached to the btn as a signal
         """
         self.linkSignal.emit(self.link)
+
+
+class QVLine(QtWidgets.QFrame):
+    '''
+    Simple class to draw separators between the light layouts - VERTICAL
+    '''
+    def __init__(self):
+        super(QVLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.VLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
+
+
+class QHLine(QtWidgets.QFrame):
+    '''
+    Simple class to draw separators between the light layouts - HORIZONTAL
+    '''
+    def __init__(self):
+        super(QHLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.HLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
 
