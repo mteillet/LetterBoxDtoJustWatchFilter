@@ -20,6 +20,14 @@ class Init_model():
         self.generic_lists["Musical"] = "https://letterboxd.com/search/lists/musicals/"
         self.popular_link = "https://letterboxd.com/lists/popular/this/week/"
         self.generic_lists_dict = {}
+        # List Scanning
+        self.list_scan_url = ""
+
+    def set_list_scan_url(self, data):
+        self.list_scan_url = data
+
+    def get_list_scan_url(self):
+        return self.list_scan_url
 
     def set_generic_lists_dict(self, data):
         self.generic_lists_dict = data

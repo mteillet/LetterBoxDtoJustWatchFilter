@@ -56,7 +56,51 @@ class Init_main_controller():
         """
         Testing if we can catch the list clicked signal
         """
-        print("Got Signal for list : %s" % link)
+        # In case the link is coming from one of the shortened urls
+        if link.startswith("/"):
+            link = "https://letterboxd.com%s" % link
+        # Sending link to model data bdd
+        self.model.set_list_scan_url(link)
+        # Making sur data is in model bdd
+        print("Scanning list : %s" % self.model.get_list_scan_url())
+        self.scan_list()
+
+    def scan_list(self):
+        """
+        Scanning a new list and returning the list of movies
+        """
+        url_to_scan = self.model.get_list_scan_url()
+        list_page = requests.get(url_to_scan)
+
+        if list_page.status_code != 200:
+            return print("ERROR LOADING THE LINK : %s" % url_to_scan)
+
+        # Checking if there are multiple pages
+        pageSoup = ["filmContainer"]
+        fetchedFilmsContainers = []
+
+        # In case the url was shortened
+        full_url = requests.get(url_to_scan).url
+
+        current = 1
+        while len(pageSoup) >> 0:
+            new_url= "%spage/%i/" % (full_url, current)
+            list_page = requests.get(new_url)
+            if list_page.status_code != 200:
+                return print("ERROR LOADING URL : %s" % new_url)
+                break
+            else:
+                print("Found page : %s" % new_url)
+            soup = BeautifulSoup(list_page.content, features = "html.parser")
+            pageSoup = soup.find_all("li", class_="poster-container")
+            if len(pageSoup) >> 0:
+                fetchedFilmsContainers += pageSoup
+            current += 1
+
+        # Debug print, no need to uncomment
+        # print(fetchedFilmsContainers)
+
+        # Now need to find the actual name of the movies
 
     def get_letterboxd_popular_week(self):
         """
