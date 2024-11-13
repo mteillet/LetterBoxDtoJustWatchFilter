@@ -14,7 +14,7 @@ def main():
     initView = Main_Window()
     Init_main_controller(initModel, initView)
 
-    initView.resize(800, 500)
+    initView.resize(1280, 720)
     initView.show()
 
     sys.exit(app.exec_())
