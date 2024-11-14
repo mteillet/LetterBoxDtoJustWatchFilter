@@ -101,6 +101,14 @@ class Init_main_controller():
         # print(fetchedFilmsContainers)
 
         # Now need to find the actual name of the movies
+        filmList = []
+        for film in fetchedFilmsContainers:
+            poster_container = film.find("div", class_ = "really-lazy-load")
+            regex = re.compile('data-film-slug=["\'](.*?)["\']')
+            movie_name = regex.search(str(poster_container)).group(1)
+            filmList.append(movie_name)
+
+        print(filmList)
 
     def get_letterboxd_popular_week(self):
         """
