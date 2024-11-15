@@ -6,6 +6,8 @@ import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
+from view.results_window import ResultsWindow
+
 class Init_main_controller():
     def __init__(self, model, view):
         """
@@ -69,6 +71,10 @@ class Init_main_controller():
         # Printing the list fo movies
         for film in self.model.get_film_list():
             print(film)
+        # Launch the display of the results view
+        self.results_controlller = ResultsController(self.model, ResultsWindow)
+        self.results_controlller.show_results()
+
 
     def scan_list(self):
         """
@@ -365,4 +371,13 @@ class Init_main_controller():
             }
             """
         self.view.setStyleSheet(stylesheet)
+
+
+class ResultsController():
+    def __init__(self, model, view):
+        self.model = model
+        self.view = view
+
+    def show_results(self):
+        self.view.show()
 
