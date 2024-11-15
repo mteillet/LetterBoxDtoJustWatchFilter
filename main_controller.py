@@ -50,6 +50,7 @@ class Init_main_controller():
         """
         Connecting signals between the model and view
         """
+        print("clicked a list btn")
         self.view.popular_list_signal.connect(self.list_clicked)
 
     def list_clicked(self, link):
@@ -63,7 +64,11 @@ class Init_main_controller():
         self.model.set_list_scan_url(link)
         # Making sur data is in model bdd
         print("Scanning list : %s" % self.model.get_list_scan_url())
-        self.scan_list()
+        film_list = self.scan_list()
+        self.model.set_film_list(film_list)
+        # Printing the list fo movies
+        for film in self.model.get_film_list():
+            print(film)
 
     def scan_list(self):
         """
@@ -108,7 +113,7 @@ class Init_main_controller():
             movie_name = regex.search(str(poster_container)).group(1)
             filmList.append(movie_name)
 
-        print(filmList)
+        return filmList
 
     def get_letterboxd_popular_week(self):
         """

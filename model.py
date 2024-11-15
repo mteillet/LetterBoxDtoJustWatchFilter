@@ -22,6 +22,14 @@ class Init_model():
         self.generic_lists_dict = {}
         # List Scanning
         self.list_scan_url = ""
+        # Film names fils
+        self.film_list = []
+
+    def set_film_list(self, data):
+        self.film_list = data
+
+    def get_film_list(self):
+        return self.film_list
 
     def set_list_scan_url(self, data):
         self.list_scan_url = data
