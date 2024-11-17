@@ -7,6 +7,7 @@ class ResultsWindow(QtWidgets.QWidget):
     """
     def __init__(self):
         super(ResultsWindow, self).__init__()
+        # print("init results window")
         self.setWindowTitle("Scan Results")
         self.resize(1280, 720)
         self.build_gui()

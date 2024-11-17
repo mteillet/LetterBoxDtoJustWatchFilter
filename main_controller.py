@@ -72,8 +72,8 @@ class Init_main_controller():
         for film in self.model.get_film_list():
             print(film)
         # Launch the display of the results view
-        self.results_controlller = ResultsController(self.model, ResultsWindow)
-        self.results_controlller.show_results()
+        ResultsController(self.model)
+        print("Supposed to have called the Results Controller")
 
 
     def scan_list(self):
@@ -374,10 +374,17 @@ class Init_main_controller():
 
 
 class ResultsController():
-    def __init__(self, model, view):
+    """
+    Main Controller for the results window
+    """
+    def __init__(self, model):
+        print("Init Results Controller")
         self.model = model
-        self.view = view
+        self.view = ResultsWindow()
+        self.show_results()
 
     def show_results(self):
-        self.view.show()
+        print("call show window")
+        window = self.view.show()
+
 
