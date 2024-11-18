@@ -5,12 +5,22 @@ class ResultsWindow(QtWidgets.QWidget):
     """
     Class for displaying the film results 
     """
-    def __init__(self):
-        super(ResultsWindow, self).__init__()
-        # print("init results window")
+    def __init__(self, parent = None):
+        super(ResultsWindow, self).__init__(parent)
+        print("init results window")
         self.setWindowTitle("Scan Results")
         self.resize(1280, 720)
+        self.center_on_screen()
         self.build_gui()
+
+    def center_on_screen(self):
+        """
+        Center the window on the screen.
+        """
+        screen_geometry = QtWidgets.QApplication.desktop().screenGeometry()
+        window_geometry = self.frameGeometry()
+        window_geometry.moveCenter(screen_geometry.center())
+        self.move(window_geometry.topLeft())
 
     def build_gui(self):
         """

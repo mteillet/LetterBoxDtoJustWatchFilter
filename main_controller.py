@@ -4,6 +4,7 @@ from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
+from PySide2 import QtWidgets
 from playwright.sync_api import sync_playwright
 
 from view.results_window import ResultsWindow
@@ -72,7 +73,8 @@ class Init_main_controller():
         for film in self.model.get_film_list():
             print(film)
         # Launch the display of the results view
-        ResultsController(self.model)
+        self.results_controller = ResultsController(self.model)
+        self.results_controller.show_results()
         print("Supposed to have called the Results Controller")
 
 
@@ -377,14 +379,15 @@ class ResultsController():
     """
     Main Controller for the results window
     """
-    def __init__(self, model):
-        print("Init Results Controller")
+    def __init__(self, model, parent=None):
         self.model = model
-        self.view = ResultsWindow()
-        self.show_results()
+        self.view_results = ResultsWindow(parent=None)
 
     def show_results(self):
         print("call show window")
-        window = self.view.show()
+        self.view_results.show()
+        self.view_results.raise_()
+        self.view_results.activateWindow()
+        print("Is ResultsWindow visible?", self.view_results.isVisible())
 
 
