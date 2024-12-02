@@ -53,7 +53,6 @@ class Init_main_controller():
         """
         Connecting signals between the model and view
         """
-        print("clicked a list btn")
         self.view.popular_list_signal.connect(self.list_clicked)
 
     def list_clicked(self, link):
@@ -390,10 +389,10 @@ class ResultsController:
         self.model = model
         self.view_results = view
         self.main_controller = main_controller
-        print("Results Controller initialized with view : %s" % str(self.view_results))
+        # print("Results Controller initialized with view : %s" % str(self.view_results))
 
     def show_results(self):
-        print("Calling show on results window from the results controller")
+        # print("Calling show on results window from the results controller")
         self.view_results.show()
         self.main_controller.applyStyleSheet(self.view_results)
 
