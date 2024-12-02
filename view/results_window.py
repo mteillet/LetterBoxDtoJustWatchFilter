@@ -7,7 +7,7 @@ class ResultsWindow(QtWidgets.QWidget):
     """
     def __init__(self):
         super(ResultsWindow, self).__init__()
-        print("init results window")
+        # print("init results window")
         self.setWindowTitle("Scan Results")
         self.build_gui()
 
@@ -25,10 +25,49 @@ class ResultsWindow(QtWidgets.QWidget):
         Init the widgets and layouts to build the gui
         """
         self.layout = QtWidgets.QVBoxLayout()
-        self.tmp_lbl = QtWidgets.QLabel("Results Window")
+
+        ###############
+        ##  WIDGETS  ##
+        ###############
+        self.list_lbl = QtWidgets.QLabel("List Name")
+
+        self.status_lbl = QtWidgets.QLabel("Scan in progress")
+        self.percentage_lbl = QtWidgets.QLabel("{}%".format("50".zfill(2)))
+        self.loading_bar = QtWidgets.QLabel("[=====_____]")
 
 
-        self.layout.addWidget(self.tmp_lbl)
+        self.bottom_bar_layout = QtWidgets.QHBoxLayout()
+        self.bottom_bar_layout.addStretch()
+        self.bottom_bar_layout.addWidget(self.status_lbl)
+        self.bottom_bar_layout.addWidget(QVLine())
+        self.bottom_bar_layout.addWidget(self.loading_bar)
+        self.bottom_bar_layout.addWidget(self.percentage_lbl)
+
+        self.layout.addWidget(self.list_lbl)
+        self.layout.addStretch()
+        self.layout.addWidget(QHLine())
+        self.layout.addLayout(self.bottom_bar_layout)
+
         self.setLayout(self.layout)
+
+
+class QVLine(QtWidgets.QFrame):
+    '''
+    Simple class to draw separators between the light layouts - VERTICAL
+    '''
+    def __init__(self):
+        super(QVLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.VLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
+
+
+class QHLine(QtWidgets.QFrame):
+    '''
+    Simple class to draw separators between the light layouts - HORIZONTAL
+    '''
+    def __init__(self):
+        super(QHLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.HLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
 
