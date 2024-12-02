@@ -26,7 +26,7 @@ class Init_main_controller():
 
         # Calling gui build here to get the finish signal
         self.view.build_homepage(self.model.get_generic_lists_dict())
-        self.applyStyleSheet()
+        self.applyStyleSheet(self.view)
         self.connect_signals()
 
     def connect_initial_signals(self):
@@ -58,7 +58,7 @@ class Init_main_controller():
 
     def list_clicked(self, link):
         """
-        Testing if we can catch the list clicked signal
+        Launching the results view after scanning the clicked list
         """
         # In case the link is coming from one of the shortened urls
         if link.startswith("/"):
@@ -72,13 +72,13 @@ class Init_main_controller():
         # Printing the list fo movies
         for film in self.model.get_film_list():
             print(film)
-        # Launch the display of the results view
-        self.resultsView = ResultsWindow()
-        #self.resultsView.show()
-        self.results_controller = ResultsController(self.model, self.resultsView)
+
+        ####################################################
+        ##  LAUNCH THE RESULTS WINDOW AND ITS CONTROLLER  ##
+        ####################################################
+        self.results_view = ResultsWindow()
+        self.results_controller = ResultsController(self.model, self.results_view, self)
         self.results_controller.show_results()
-        #self.resultsView.resize(1280, 720)
-        #self.resultsView.show()
 
 
     def scan_list(self):
@@ -232,7 +232,7 @@ class Init_main_controller():
         return title, results
 
 
-    def applyStyleSheet(self):
+    def applyStyleSheet(self, window):
         """
         Base StyleSheet for homepage
         """
@@ -378,20 +378,23 @@ class Init_main_controller():
                 border: 1px solid #A3E635;
             }
             """
-        self.view.setStyleSheet(stylesheet)
+        # self.view.setStyleSheet(stylesheet)
+        window.setStyleSheet(stylesheet)
 
 
 class ResultsController:
     """
     Main Controller for the results window
     """
-    def __init__(self, model, view):
+    def __init__(self, model, view, main_controller):
         self.model = model
         self.view_results = view
+        self.main_controller = main_controller
         print("Results Controller initialized with view : %s" % str(self.view_results))
 
     def show_results(self):
         print("Calling show on results window from the results controller")
         self.view_results.show()
+        self.main_controller.applyStyleSheet(self.view_results)
 
 
