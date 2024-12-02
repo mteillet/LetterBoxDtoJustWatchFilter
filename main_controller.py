@@ -74,9 +74,11 @@ class Init_main_controller():
             print(film)
         # Launch the display of the results view
         self.resultsView = ResultsWindow()
+        #self.resultsView.show()
         self.results_controller = ResultsController(self.model, self.resultsView)
-        self.resultsView.resize(1280, 720)
-        self.resultsView.show()
+        self.results_controller.show_results()
+        #self.resultsView.resize(1280, 720)
+        #self.resultsView.show()
 
 
     def scan_list(self):
@@ -217,7 +219,10 @@ class Init_main_controller():
         poster_urls = []
         # Getting the posters data
         for poster in posters:
-            img_url = poster.find("img")["srcset"]
+            try :
+                img_url = poster.find("img")["srcset"]
+            except KeyError :
+                img_url = poster.find("img")["src"]
             img_data = requests.get(img_url).content
             poster_urls.append(img_data)
         results = {}
@@ -376,12 +381,17 @@ class Init_main_controller():
         self.view.setStyleSheet(stylesheet)
 
 
-class ResultsController():
+class ResultsController:
     """
     Main Controller for the results window
     """
     def __init__(self, model, view):
         self.model = model
         self.view_results = view
+        print("Results Controller initialized with view : %s" % str(self.view_results))
+
+    def show_results(self):
+        print("Calling show on results window from the results controller")
+        self.view_results.show()
 
 
