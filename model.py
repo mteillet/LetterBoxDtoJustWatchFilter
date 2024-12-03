@@ -24,6 +24,9 @@ class Init_model():
         self.list_scan_url = ""
         # Film names fils
         self.film_list = []
+        # JustWatchUrls
+        self.justWatch_urls = {}
+        self.set_justWatch_urls()
 
     def set_film_list(self, data):
         self.film_list = data
@@ -54,6 +57,21 @@ class Init_model():
 
     def get_popular_list_dict(self):
         return self.popular_list_dict
+
+    def set_justWatch_urls(self):
+        """
+        Lists of urls to do web searches with the countries availability
+        """
+        self.justWatch_urls = {
+            "france" : "https://www.justwatch.com/fr/recherche?q=",
+            "germany" : "https://www.justwatch.com/de/Suche?q=",
+            "spain" : "https://www.justwatch.com/es/buscar?q=",
+            "united-kingdom" : "https://www.justwatch.com/uk/search?q=",
+            "united-states" : "https://www.justwatch.com/us/search?q=",
+                }
+
+    def get_justWatch_urls(self):
+        return self.justWatch_urls
 
     def set_data(self, data):
         self.data = data

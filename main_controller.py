@@ -55,6 +55,14 @@ class Init_main_controller():
         """
         self.view.popular_list_signal.connect(self.list_clicked)
 
+    def fetch_gui_country(self):
+        """
+        Returns the country selected in the main window ComboBox
+        """
+        # NEED TO CONVERT THE ITEM INDEXES TO COUNTRY TEXT IN ORDER TO
+        # BE ABLE TO MATCH THE MODEL BDD URLS COUNTRIES DICT
+        return self.view.languageCbox.currentText()
+
     def list_clicked(self, link):
         """
         Launching the results view after scanning the clicked list
@@ -391,9 +399,30 @@ class ResultsController:
         self.main_controller = main_controller
         # print("Results Controller initialized with view : %s" % str(self.view_results))
 
+    def startScan(self):
+        """
+        Getting the film list from model bdd
+        """
+        film_titles = self.model.get_film_list()
+        
+        jw_search_url = self.get_jw_country_url()
+
+    def get_jw_country_url(self):
+        """
+        Fetches the country urls and returns the correct one based
+        on the gui selection
+        """
+        country_urls = self.model.get_justWatch_urls()
+        current_country = self.main_controller.fetch_gui_country()
+        print("Current country is : %s" % current_country)
+        print("Current country url is %s" % country_urls[current_country])
+        
+
     def show_results(self):
         # print("Calling show on results window from the results controller")
         self.view_results.show()
+        self.view_results.resize(1280, 720)
         self.main_controller.applyStyleSheet(self.view_results)
+        self.startScan()
 
 
