@@ -59,9 +59,7 @@ class Init_main_controller():
         """
         Returns the country selected in the main window ComboBox
         """
-        # NEED TO CONVERT THE ITEM INDEXES TO COUNTRY TEXT IN ORDER TO
-        # BE ABLE TO MATCH THE MODEL BDD URLS COUNTRIES DICT
-        return self.view.languageCbox.currentText()
+        return self.view.languageCbox.currentIndex()
 
     def list_clicked(self, link):
         """
@@ -414,8 +412,8 @@ class ResultsController:
         """
         country_urls = self.model.get_justWatch_urls()
         current_country = self.main_controller.fetch_gui_country()
-        print("Current country is : %s" % current_country)
-        print("Current country url is %s" % country_urls[current_country])
+        # print("Current country index is : %s" % current_country)
+        print("Current country url is %s" % country_urls[str(current_country)])
         
 
     def show_results(self):

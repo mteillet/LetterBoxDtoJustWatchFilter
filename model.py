@@ -63,11 +63,11 @@ class Init_model():
         Lists of urls to do web searches with the countries availability
         """
         self.justWatch_urls = {
-            "france" : "https://www.justwatch.com/fr/recherche?q=",
-            "germany" : "https://www.justwatch.com/de/Suche?q=",
-            "spain" : "https://www.justwatch.com/es/buscar?q=",
-            "united-kingdom" : "https://www.justwatch.com/uk/search?q=",
-            "united-states" : "https://www.justwatch.com/us/search?q=",
+            "0" : "https://www.justwatch.com/fr/recherche?q=",
+            "1" : "https://www.justwatch.com/de/Suche?q=",
+            "2" : "https://www.justwatch.com/es/buscar?q=",
+            "3" : "https://www.justwatch.com/uk/search?q=",
+            "4" : "https://www.justwatch.com/us/search?q=",
                 }
 
     def get_justWatch_urls(self):
