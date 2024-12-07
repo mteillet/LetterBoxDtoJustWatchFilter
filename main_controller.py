@@ -402,8 +402,9 @@ class ResultsController:
         Getting the film list from model bdd
         """
         film_titles = self.model.get_film_list()
-        
+        number_of_films = len(film_titles)
         jw_search_url = self.get_jw_country_url()
+        print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, number_of_films))
 
     def get_jw_country_url(self):
         """
@@ -414,6 +415,7 @@ class ResultsController:
         current_country = self.main_controller.fetch_gui_country()
         # print("Current country index is : %s" % current_country)
         print("Current country url is %s" % country_urls[str(current_country)])
+        return country_urls[str(current_country)]
         
 
     def show_results(self):
