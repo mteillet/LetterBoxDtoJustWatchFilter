@@ -27,6 +27,7 @@ class Init_model():
         # JustWatchUrls
         self.justWatch_urls = {}
         self.set_justWatch_urls()
+        self.request_headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
 
     def set_film_list(self, data):
         self.film_list = data
@@ -69,6 +70,12 @@ class Init_model():
             "3" : "https://www.justwatch.com/uk/search?q=",
             "4" : "https://www.justwatch.com/us/search?q=",
                 }
+
+    def get_request_headers(self):
+        """
+        Returns the request headers for url requests
+        """
+        return self.request_headers
 
     def get_justWatch_urls(self):
         return self.justWatch_urls

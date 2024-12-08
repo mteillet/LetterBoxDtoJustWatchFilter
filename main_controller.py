@@ -1,6 +1,7 @@
 # main_controller.py
 import re
 from time import sleep
+import threading
 
 import requests
 from bs4 import BeautifulSoup
@@ -8,6 +9,7 @@ from PySide2 import QtWidgets
 from playwright.sync_api import sync_playwright
 
 from view.results_window import ResultsWindow
+from filmScannerThread import MovieScannerThread
 
 class Init_main_controller():
     def __init__(self, model, view):
@@ -405,6 +407,24 @@ class ResultsController:
         number_of_films = len(film_titles)
         jw_search_url = self.get_jw_country_url()
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, number_of_films))
+        request_hears = self.model.get_request_headers()
+
+        # Setup for the threading system
+        threads = []
+        results = []
+        lock = threading.Lock() # Used to synchronized access to the results list
+
+        # Create and start threads
+        for movie_name in film_titles:
+            thread = MovieScannerThread(movie_name, results, lock)
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        print("SCAN DONE, OBTAINED RESULT : %s" % results)
+        print("Results lenght = %s" % len(results))
 
     def get_jw_country_url(self):
         """
@@ -416,13 +436,41 @@ class ResultsController:
         # print("Current country index is : %s" % current_country)
         print("Current country url is %s" % country_urls[str(current_country)])
         return country_urls[str(current_country)]
-        
 
     def show_results(self):
         # print("Calling show on results window from the results controller")
         self.view_results.show()
         self.view_results.resize(1280, 720)
+        # StyleSheets
         self.main_controller.applyStyleSheet(self.view_results)
+        # Applying other stylesheet on bottom row
+        widgetList = self.get_all_widgets(self.view_results.bottom_bar_layout)
+        self.label_styling(widgetList)
         self.startScan()
 
+    def get_all_widgets(self, layout):
+        """
+        Retrieve all widgets contained in the given layout.
+        """
+        widgets = []
+        for i in range(layout.count()):
+            item = layout.itemAt(i)
+            if item.widget():
+                widgets.append(item.widget())
+        return widgets
+
+    def label_styling(self, widgets):
+        """
+        Apply other stylesheet on the bottom bar labels
+        """
+        stylesheet = """
+            /* Labels */
+            QLabel {
+                color: #979797;
+                font-weight: lighter;
+                font-size: 11px;
+            }
+            """
+        for i in widgets:
+            i.setStyleSheet(stylesheet)
 
