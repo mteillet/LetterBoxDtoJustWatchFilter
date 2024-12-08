@@ -5,7 +5,7 @@ import threading
 
 import requests
 from bs4 import BeautifulSoup
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtCore
 from playwright.sync_api import sync_playwright
 
 from view.results_window import ResultsWindow
@@ -389,11 +389,14 @@ class Init_main_controller():
         window.setStyleSheet(stylesheet)
 
 
-class ResultsController:
+class ResultsController(QtCore.QObject):
     """
     Main Controller for the results window
     """
+    scan_worker_result = QtCore.Signal(dict)
+
     def __init__(self, model, view, main_controller):
+        super().__init__()
         self.model = model
         self.view_results = view
         self.main_controller = main_controller
@@ -407,24 +410,46 @@ class ResultsController:
         number_of_films = len(film_titles)
         jw_search_url = self.get_jw_country_url()
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, number_of_films))
-        request_hears = self.model.get_request_headers()
+        request_header = self.model.get_request_headers()
 
         # Setup for the threading system
-        threads = []
-        results = []
-        lock = threading.Lock() # Used to synchronized access to the results list
+        self.workers = []
+        self.scan_worker_result.connect(self.worker_finished)
 
+        """
         # Create and start threads
         for movie_name in film_titles:
-            thread = MovieScannerThread(movie_name, results, lock)
-            threads.append(thread)
-            thread.start()
+            worker = MovieScannerThread(movie_name, request_header, jw_search_url)
+            worker.result_ready.connect(self.worker_finished)
+            worker.finished.connect(self.cleanup_worker)
+            self.workers.append(worker)
+            worker.start()
+        """
 
-        for thread in threads:
-            thread.join()
+        self.pool = QtCore.QThreadPool.globalInstance()
+        self.pool.setMaxThreadCount(3)
+        for movie_name in film_titles:
+            task = MovieScannerThread(movie_name, request_header, jw_search_url, self.scan_worker_result)
+            self.workers.append(task)
+            self.pool.start(task)
 
-        print("SCAN DONE, OBTAINED RESULT : %s" % results)
-        print("Results lenght = %s" % len(results))
+
+    def worker_finished(self, result):
+        """
+        Obtaining result from worker once finished
+        """
+        print(result)
+        # Sending the result to the model bdd
+        self.model.add_scan_results(result)
+
+    def cleanup_worker(self):
+        """
+        Remove finished workers from list
+        """
+        self.workers = [w for w in self.workers if not w.isFinished()]
+        if not self.workers:
+            print("Workers finished")
+            print(self.model.get_scan_result)
 
     def get_jw_country_url(self):
         """
