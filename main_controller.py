@@ -393,14 +393,19 @@ class ResultsController(QtCore.QObject):
     """
     Main Controller for the results window
     """
-    scan_worker_result = QtCore.Signal(dict)
+    # scan_worker_result = QtCore.Signal(dict)
 
     def __init__(self, model, view, main_controller):
         super().__init__()
         self.model = model
         self.view_results = view
         self.main_controller = main_controller
-        # print("Results Controller initialized with view : %s" % str(self.view_results))
+        # Setup for the threading system
+        self.pool = QtCore.QThreadPool.globalInstance()
+        # Max concurrent workers
+        self.pool.setMaxThreadCount(2)
+        # Connecting the signal
+        # self.scan_worker_result.connect(self.worker_finished)
 
     def startScan(self):
         """
@@ -412,44 +417,30 @@ class ResultsController(QtCore.QObject):
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, number_of_films))
         request_header = self.model.get_request_headers()
 
-        # Setup for the threading system
-        self.workers = []
-        self.scan_worker_result.connect(self.worker_finished)
-
-        """
-        # Create and start threads
         for movie_name in film_titles:
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
-            worker.result_ready.connect(self.worker_finished)
-            worker.finished.connect(self.cleanup_worker)
-            self.workers.append(worker)
-            worker.start()
-        """
+            worker.signals.result.connect(self.worker_finished)
+            self.pool.start(worker)
 
-        self.pool = QtCore.QThreadPool.globalInstance()
-        self.pool.setMaxThreadCount(3)
-        for movie_name in film_titles:
-            task = MovieScannerThread(movie_name, request_header, jw_search_url, self.scan_worker_result)
-            self.workers.append(task)
-            self.pool.start(task)
-
-
+    @QtCore.Slot(dict) # Explicitly declare as a slot
     def worker_finished(self, result):
         """
         Obtaining result from worker once finished
         """
         print(result)
         # Sending the result to the model bdd
-        self.model.add_scan_results(result)
+        #self.model.add_scan_results(result)
 
-    def cleanup_worker(self):
-        """
-        Remove finished workers from list
-        """
-        self.workers = [w for w in self.workers if not w.isFinished()]
-        if not self.workers:
-            print("Workers finished")
-            print(self.model.get_scan_result)
+    def show_results(self):
+        # print("Calling show on results window from the results controller")
+        self.view_results.show()
+        self.view_results.resize(1280, 720)
+        # StyleSheets
+        self.main_controller.applyStyleSheet(self.view_results)
+        # Applying other stylesheet on bottom row
+        widgetList = self.get_all_widgets(self.view_results.bottom_bar_layout)
+        self.label_styling(widgetList)
+        self.startScan()
 
     def get_jw_country_url(self):
         """
@@ -462,16 +453,6 @@ class ResultsController(QtCore.QObject):
         print("Current country url is %s" % country_urls[str(current_country)])
         return country_urls[str(current_country)]
 
-    def show_results(self):
-        # print("Calling show on results window from the results controller")
-        self.view_results.show()
-        self.view_results.resize(1280, 720)
-        # StyleSheets
-        self.main_controller.applyStyleSheet(self.view_results)
-        # Applying other stylesheet on bottom row
-        widgetList = self.get_all_widgets(self.view_results.bottom_bar_layout)
-        self.label_styling(widgetList)
-        self.startScan()
 
     def get_all_widgets(self, layout):
         """
