@@ -404,6 +404,7 @@ class ResultsController(QtCore.QObject):
         self.pool = QtCore.QThreadPool.globalInstance()
         # Max concurrent workers
         self.pool.setMaxThreadCount(2)
+        self.active_tasks = 0
         # Connecting the signal
         # self.scan_worker_result.connect(self.worker_finished)
 
@@ -420,6 +421,7 @@ class ResultsController(QtCore.QObject):
         for movie_name in film_titles:
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
             worker.signals.result.connect(self.worker_finished)
+            self.active_tasks += 1
             self.pool.start(worker)
 
     @QtCore.Slot(dict) # Explicitly declare as a slot
@@ -427,9 +429,13 @@ class ResultsController(QtCore.QObject):
         """
         Obtaining result from worker once finished
         """
+        self.active_tasks -= 1
+        print(self.active_tasks)
         print(result)
         # Sending the result to the model bdd
         #self.model.add_scan_results(result)
+        if self.active_tasks == 0: # All active tasks are done
+            print("All Tasks completed")
 
     def show_results(self):
         # print("Calling show on results window from the results controller")

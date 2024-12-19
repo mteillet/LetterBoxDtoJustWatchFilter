@@ -28,6 +28,11 @@ class MovieScannerThread(QtCore.QRunnable):
         """
         Scan the JW page for the movie
         """
+        if not hasattr (self, "movie_name"):
+            print("No movie name attrib !")
+            self.signals = MovieWorkersSignal()
+            self.signals.result.emit("None")
+            return
         print("Scanning %s" % self.movie_name)
         result_dict = {}
         result_dict[self.movie_name] = {}
@@ -38,10 +43,13 @@ class MovieScannerThread(QtCore.QRunnable):
         count = 1
         try:
             if html.status_code == 429: # In case the serve finds too many requests 
+                '''
                 while html.status_code == 429:
                     sleep(count)
                     html = requests.get(search_url, headers = self.header)
                     count += 1
+                '''
+                result_dict["Error"] = "Requeue"
 
             if html.status_code != 200:
                 result_dict[self.movie_name]["Error"] = True
