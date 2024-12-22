@@ -403,10 +403,7 @@ class ResultsController(QtCore.QObject):
         # Setup for the threading system
         self.pool = QtCore.QThreadPool.globalInstance()
         # Max concurrent workers
-        self.pool.setMaxThreadCount(2)
-        self.active_tasks = 0
-        # Connecting the signal
-        # self.scan_worker_result.connect(self.worker_finished)
+        #self.pool.setMaxThreadCount(2)
 
     def startScan(self):
         """
@@ -417,11 +414,20 @@ class ResultsController(QtCore.QObject):
         jw_search_url = self.get_jw_country_url()
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, number_of_films))
         request_header = self.model.get_request_headers()
+        self.scan(film_titles, request_header, jw_search_url)
+    
+    def requeueScan(self, film_titles):
+        """
+        Requeue missed films to scan
+        """
+        jw_search_url = self.get_jw_country_url()
+        request_header = self.model.get_request_headers()
+        self.scan(film_titles, request_header, jw_search_url)
 
+    def scan(self, film_titles, request_header, jw_search_url):
         for movie_name in film_titles:
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
             worker.signals.result.connect(self.worker_finished)
-            self.active_tasks += 1
             self.pool.start(worker)
 
     @QtCore.Slot(dict) # Explicitly declare as a slot
@@ -429,13 +435,29 @@ class ResultsController(QtCore.QObject):
         """
         Obtaining result from worker once finished
         """
-        self.active_tasks -= 1
-        print(self.active_tasks)
         print(result)
         # Sending the result to the model bdd
-        #self.model.add_scan_results(result)
-        if self.active_tasks == 0: # All active tasks are done
-            print("All Tasks completed")
+        self.model.add_scan_results(result)
+        # Requeue missing member to avoid failed scans
+        if self.pool.activeThreadCount == 0:
+            self.checkRequeues()
+
+    def checkRequeues(self):
+        """
+        Compares scan bdd agains film list to requeue missed movies
+        """
+        film_titles = self.model.get_film_list()
+        scanned_films = self.model.get_scan_results()
+        need_requeue = []
+
+        for movie_name in film_titles:
+            if movie_name not in scanned_films.keys():
+                need_requeue.append(movie_name)
+
+        if len(movie_name) > 0:
+            self.requeueScan(movie_name)
+        else:
+            print("All movies are done scannign")
 
     def show_results(self):
         # print("Calling show on results window from the results controller")
