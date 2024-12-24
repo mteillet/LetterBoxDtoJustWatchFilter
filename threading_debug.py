@@ -60,14 +60,14 @@ class MovieScannerThread(QtCore.QRunnable):
         Dummy parsing function
         """
         soup = BeautifulSoup(html.content, features="html.parser")
-        return "Parsed Data placeholder %s" % soup
+        return "Parsed Data placeholder %s" % soup.find("a", class_="title-list-row__column-header").find("span", class_="header-title").get_text(strip=True)
 
 class ThreadingTestApp(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
         self.pool = QtCore.QThreadPool()
-        self.pool.setMaxThreadCount(2)
+        #self.pool.setMaxThreadCount(2)
 
     def init_ui(self):
         self.setWindowTitle("Threading Test")
