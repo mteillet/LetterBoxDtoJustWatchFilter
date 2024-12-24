@@ -43,13 +43,11 @@ class MovieScannerThread(QtCore.QRunnable):
         count = 1
         try:
             if html.status_code == 429: # In case the serve finds too many requests 
-                '''
                 while html.status_code == 429:
                     sleep(count)
                     html = requests.get(search_url, headers = self.header)
                     count += 1
-                '''
-                result_dict["Error"] = "Requeue"
+                # result_dict["Error"] = "Requeue"
 
             if html.status_code != 200:
                 result_dict[self.movie_name]["Error"] = True

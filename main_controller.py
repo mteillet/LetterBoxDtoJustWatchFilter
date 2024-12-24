@@ -401,9 +401,10 @@ class ResultsController(QtCore.QObject):
         self.view_results = view
         self.main_controller = main_controller
         # Setup for the threading system
-        self.pool = QtCore.QThreadPool.globalInstance()
+        self.pool = QtCore.QThreadPool()
         # Max concurrent workers
-        #self.pool.setMaxThreadCount(2)
+        self.pool.setMaxThreadCount(4)
+        #self.pool.setStackSize(2)
 
     def startScan(self):
         """
@@ -428,7 +429,8 @@ class ResultsController(QtCore.QObject):
         for movie_name in film_titles:
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
             worker.signals.result.connect(self.worker_finished)
-            self.pool.start(worker)
+            worker.autoDelete()
+            self.pool.tryStart(worker)
 
     @QtCore.Slot(dict) # Explicitly declare as a slot
     def worker_finished(self, result):
@@ -438,9 +440,12 @@ class ResultsController(QtCore.QObject):
         print(result)
         # Sending the result to the model bdd
         self.model.add_scan_results(result)
-        # Requeue missing member to avoid failed scans
-        if self.pool.activeThreadCount == 0:
-            self.checkRequeues()
+        # Requeue missing member to batch scans chunks
+        if self.pool.waitForDone():
+            print("Finished thread pool")
+            self.pool.clear()
+            self.checkRequeues()  
+
 
     def checkRequeues(self):
         """
@@ -450,12 +455,18 @@ class ResultsController(QtCore.QObject):
         scanned_films = self.model.get_scan_results()
         need_requeue = []
 
+        # print(list(scanned_films.keys()))
+        # print(film_titles)
+
         for movie_name in film_titles:
-            if movie_name not in scanned_films.keys():
+            # print(movie_name)
+            if movie_name not in list(scanned_films.keys()):
                 need_requeue.append(movie_name)
 
-        if len(movie_name) > 0:
-            self.requeueScan(movie_name)
+        if len(need_requeue) > 0:
+            # print("would requeue : %s" % need_requeue)
+            print("DATA : %s" % list(self.model.get_scan_results().keys()))
+            self.requeueScan(need_requeue)
         else:
             print("All movies are done scannign")
 
@@ -478,7 +489,7 @@ class ResultsController(QtCore.QObject):
         country_urls = self.model.get_justWatch_urls()
         current_country = self.main_controller.fetch_gui_country()
         # print("Current country index is : %s" % current_country)
-        print("Current country url is %s" % country_urls[str(current_country)])
+        # print("Current country url is %s" % country_urls[str(current_country)])
         return country_urls[str(current_country)]
 
 
