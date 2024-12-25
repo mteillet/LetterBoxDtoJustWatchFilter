@@ -10,24 +10,20 @@ from playwright.sync_api import sync_playwright
 
 from view.results_window import ResultsWindow
 from filmScannerThread import MovieScannerThread
+#from threading_debug import MovieScannerThread 
 
-class Init_main_controller():
+class MainController():
     def __init__(self, model, view):
         """
         Initializing the main controller with references to the model and view
         """
         self.model = model
         self.view = view
+        self.pool = QtCore.QThreadPool()
+        self.pool.setMaxThreadCount(3)
+
         self.connect_initial_signals()
-
-        # Getting the generic dict from model
-        generic_list = self.model.get_generic_list()
-        generic_list_dict = self.build_generic_lists(generic_list)
-        # Sending the results back to model bdd
-        self.model.set_generic_lists_dict(generic_list_dict)
-
-        # Calling gui build here to get the finish signal
-        self.view.build_homepage(self.model.get_generic_lists_dict())
+        self.initialize_generic_list()
         self.applyStyleSheet(self.view)
         self.connect_signals()
 
@@ -37,18 +33,22 @@ class Init_main_controller():
         to link right away with the model
         """
         self.view.finished_homepageBuild.connect(self.init_model)
+        
+    def initialize_generic_list(self):
+        """
+        Getting generic lists data from bdd and building the homepage accordingly
+        """
+        generic_list = self.model.get_generic_list()
+        generic_list_dict = self.build_generic_lists(generic_list)
+        self.model.set_generic_lists_dict(generic_list_dict)
+        self.view.build_homepage(self.model.get_generic_lists_dict())
 
     def init_model(self):
         '''
-        Links the model to the corresponding gui widgets
+        Links the model to the corresponding gui widgets using the popular lists on letterboxd
         '''
-        # Getting the popular week list names and images, and sending them to the model
         popular_dict = self.get_letterboxd_popular_week()
         self.model.set_popular_list_dict(popular_dict)
-        # For debugging purposes, uncomment the following line
-        # print(self.model.get_popular_list_dict())
-
-        # Adding the dbd popular film lists to homepage
         self.view.add_popular_week(self.model.get_popular_list_dict())
 
     def connect_signals(self):
@@ -63,75 +63,102 @@ class Init_main_controller():
         """
         return self.view.languageCbox.currentIndex()
 
+    def ensure_full_url(self, link):
+        """
+        Checks the letterbox url format. If it is a shortened url, returning a full one
+        """
+        return "https://letterboxd.com%s" % link if link.startswith("/") else link
+
     def list_clicked(self, link):
         """
         Launching the results view after scanning the clicked list
         """
-        # In case the link is coming from one of the shortened urls
-        if link.startswith("/"):
-            link = "https://letterboxd.com%s" % link
-        # Sending link to model data bdd
-        self.model.set_list_scan_url(link)
-        # Making sur data is in model bdd
+        self.model.set_list_scan_url(self.ensure_full_url(link))
+
         print("Scanning list : %s" % self.model.get_list_scan_url())
         film_list = self.scan_list()
         self.model.set_film_list(film_list)
-        # Printing the list fo movies
-        for film in self.model.get_film_list():
-            print(film)
 
-        ####################################################
-        ##  LAUNCH THE RESULTS WINDOW AND ITS CONTROLLER  ##
-        ####################################################
+        print("Movies:", *film_list, sep="\n")
+
+        self.launch_results_view()
+
+    def launch_results_view(self):
+        """
+        Launching the actural result window and its result controller
+        """
         self.results_view = ResultsWindow()
         self.results_controller = ResultsController(self.model, self.results_view, self)
-        self.results_controller.show_results()
+        self.results_controller.show_window()
+        self.start_scan()
 
+    def start_scan(self):
+        """
+        Getting the film list from model bdd and starting the scan
+        """
+        # Dummy data for testing
+        film_titles = ['hiroshima-mon-amour', 'in-the-mood-for-love', 'her', 'pretty-in-pink', '10-things-i-hate-about-you', 'whats-your-number', 'made-of-honor', 'when-harry-met-sally', 'set-it-up', 'love-rosie', 'before-sunrise', 'how-to-lose-a-guy-in-10-days', 'pride-prejudice', 'letters-to-juliet', 'plus-one-2019', 'romeo-juliet-1996', 'emma-2020', 'tune-in-for-love', 'chungking-express', 'stuck-in-love', 'just-my-luck-2006', '500-days-of-summer', 'eternal-sunshine-of-the-spotless-mind', 'the-notebook', 'your-name', 'la-la-land', 'blue-valentine', 'flipped', 'portrait-of-a-lady-on-fire', 'carol-2015', 'happy-together-1997']
+        jw_search_url = "https://www.justwatch.com/fr/recherche?q="
+        headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+
+        #film_titles = self.model.get_film_list()
+        #jw_search_url = self.get_jw_country_url()
+        #request_header = self.model.get_request_headers()
+
+        print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, len(film_titles)))
+
+        #self.scan(film_titles, request_header, jw_search_url)
+        for movie_name in film_titles:
+            worker = MovieScannerThread(movie_name, headers, jw_search_url)
+            worker.signals.result.connect(self.worker_finished)
+            self.pool.start(worker)
+
+        print("Threading started")
+ 
+    @QtCore.Slot(dict)
+    def worker_finished(self, result):
+        """
+        Obtaining result from worker once finished
+        """
+        self.model.add_scan_results(result)
+        print("Worker Finished : %s" % result)
+        self.log_message(result)
+
+        if self.pool.activeThreadCount() == 0:
+            print("All Threads have completed")
+
+    def log_message(self, message):
+        self.results_view.log.append(str(message))
 
     def scan_list(self):
         """
         Scanning a new list and returning the list of movies
         """
         url_to_scan = self.model.get_list_scan_url()
-        list_page = requests.get(url_to_scan)
+        film_list = []
+        current_page = 1
 
-        if list_page.status_code != 200:
-            return print("ERROR LOADING THE LINK : %s" % url_to_scan)
-
-        # Checking if there are multiple pages
-        pageSoup = ["filmContainer"]
-        fetchedFilmsContainers = []
-
-        # In case the url was shortened
-        full_url = requests.get(url_to_scan).url
-
-        current = 1
-        while len(pageSoup) >> 0:
-            new_url= "%spage/%i/" % (full_url, current)
-            list_page = requests.get(new_url)
-            if list_page.status_code != 200:
-                return print("ERROR LOADING URL : %s" % new_url)
+        while True:
+            page_url = "%spage/%s/" % (url_to_scan, current_page)
+            print("Scanning : %s" % page_url)
+            response = requests.get(page_url)
+            if response.status_code != 200:
+                print("Error loading the link : %s" % page_url)
                 break
-            else:
-                print("Found page : %s" % new_url)
-            soup = BeautifulSoup(list_page.content, features = "html.parser")
-            pageSoup = soup.find_all("li", class_="poster-container")
-            if len(pageSoup) >> 0:
-                fetchedFilmsContainers += pageSoup
-            current += 1
 
-        # Debug print, no need to uncomment
-        # print(fetchedFilmsContainers)
+            soup = BeautifulSoup(response.content, "html.parser")
+            posters = soup.find_all("li", class_="poster-container")
+            if not posters:
+                break
 
-        # Now need to find the actual name of the movies
-        filmList = []
-        for film in fetchedFilmsContainers:
-            poster_container = film.find("div", class_ = "really-lazy-load")
-            regex = re.compile('data-film-slug=["\'](.*?)["\']')
-            movie_name = regex.search(str(poster_container)).group(1)
-            filmList.append(movie_name)
+            for poster in posters:
+                film_slug = re.search('data-film-slug==["\'](.*?)["\']', str(poster))
+                if film_slug:
+                    film_list.append(film_slug.group(1))
 
-        return filmList
+            current_page += 1
+
+        return film_list
 
     def get_letterboxd_popular_week(self):
         """
@@ -139,42 +166,35 @@ class Init_main_controller():
         This week's popular categories
         """
         link = self.model.get_popular_link()
-        # Trying playwright
+
         with sync_playwright() as p:
-            # Launch headless browser
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
-
             page.goto(link)
-
-            # Wait for images within the poster list to load
             page.wait_for_selector("ul.poster-list img", state="visible")
             
-            # Get the page content after JavaScript has executed
-            html = page.content()
-            soup = BeautifulSoup(html, "html.parser")
-
+            soup = BeautifulSoup(page.content(), "html.parser")
             browser.close()
 
-            # Parsing the soup to get the relevant data
-            listDict = {}
-            filmLists = soup.select(".list.-overlapped.-summary")[:2]
-            for section in filmLists:
-                title = section.select("h2 a")[0].get_text()
-                link = section.select("a.list-link")
-                href = link[0]["href"] if link else None
-                posters = section.select("ul.poster-list li.film-poster")
-                poster_urls = []
-                for poster in posters:
-                    # poster_urls.append(poster.find("img")["src"])
-                    img_url = poster.find("img")["src"]
-                    img_data = requests.get(img_url).content
-                    #print(img_url)
-                    poster_urls.append(img_data)
-                listDict[title] = {}
-                listDict[title]["posters"] = poster_urls
-                listDict[title]["link"] = href
-        return listDict
+        return self.parse_popular_lists(soup) 
+
+    def parse_popular_lists(self, soup):
+        """
+        Getting this week's first two popular lists 
+        """
+        list_dict = {}
+        film_lists = soup.select(".list.-overlapped.-summary")[:2]
+
+        for section in film_lists:
+            img_posters = []
+            title = section.select_one("h2 a").get_text()
+            href = section.select_one("a.list-link")["href"]
+            posters = [requests.get(poster.select_one("img")["src"]).content for poster in section.select("ul.poster-list li.film-poster")]
+
+            list_dict[title] = {"posters" : list(reversed(posters)),
+                                "link" : href}
+
+        return list_dict
 
     def build_generic_lists(self, generic_list):
         """
@@ -182,62 +202,32 @@ class Init_main_controller():
         Dict from it
         """
         generic_list_dict = {}
-        for key, value in generic_list.items():
-            name, results = self.list_url_scraping(key, value)
+        for key, url in generic_list.items():
+            title, results = self.scrape_list(url)
             generic_list_dict[key] = results
-            generic_list_dict[key]["title"] = name
-            print("Scraping for %s, %s -> DONE" % (key, value))
+            generic_list_dict[key]["title"] = title
+            print("Scraping %s - %s: DONE" % (key, url))
 
         return generic_list_dict
 
-    def list_url_scraping(self, list_name, url):
+    def scrape_list(self, url):
         """
-        Scraping the url, returns a dict containing :
-        dict = {
-            ["posters"] = [list of poster href from urls]
-            ["link"] = link to the list for when it is clicked
-        }
+        Scraping an url, returning a dict containing 
+        the list of posters and the link to the list
         """
         with sync_playwright() as p:
-            # Launch headless browser
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
-
             page.goto(url)
-
-            # Wait for images within the poster list to load
             page.wait_for_selector("ul.poster-list img", state="visible")
-            sleep(0.1)
-            
-            # Get the page content after JavaScript has executed
-            html = page.content()
-            soup = BeautifulSoup(html, "html.parser")
-
+            soup = BeautifulSoup(page.content(), "html.parser")
             browser.close()
 
-        # Parsing the soup to get the relevant data
-        listDict = {}
-        filmLists = soup.select(".list.-overlapped.-summary")
-        # Getting the needed data
-        title = filmLists[0].select("h2 a")[0].get_text()
-        link = filmLists[0].select("a.list-link")
-        href = link[0]["href"]
-        posters = filmLists[0].select("ul.poster-list li.film-poster")
-        poster_urls = []
-        # Getting the posters data
-        for poster in posters:
-            try :
-                img_url = poster.find("img")["srcset"]
-            except KeyError :
-                img_url = poster.find("img")["src"]
-            img_data = requests.get(img_url).content
-            poster_urls.append(img_data)
-        results = {}
-        results["posters"] = poster_urls
-        results["link"] = href
+        title = soup.select_one(".list.-overlapped.-summary h2 a").get_text()
+        href = soup.select_one(".list.-overlapped.-summary a.list-link")["href"]
+        posters = [requests.get(poster.select_one("img")["src"]).content for poster in soup.select("ul.poster-list li.film-poster")[:5]]
 
-        return title, results
-
+        return title, {"posters": list(reversed(posters)), "link" : href}
 
     def applyStyleSheet(self, window):
         """
@@ -393,105 +383,17 @@ class ResultsController(QtCore.QObject):
     """
     Main Controller for the results window
     """
-    # scan_worker_result = QtCore.Signal(dict)
-
     def __init__(self, model, view, main_controller):
         super().__init__()
         self.model = model
         self.view_results = view
         self.main_controller = main_controller
-        # Setup for the threading system
-        self.pool = QtCore.QThreadPool()
-        # Max concurrent workers
-        self.pool.setMaxThreadCount(4)
-        #self.pool.setStackSize(2)
 
-    def startScan(self):
-        """
-        Getting the film list from model bdd
-        """
-        film_titles = self.model.get_film_list()
-        number_of_films = len(film_titles)
-        jw_search_url = self.get_jw_country_url()
-        print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, number_of_films))
-        request_header = self.model.get_request_headers()
-        self.scan(film_titles, request_header, jw_search_url)
-    
-    def requeueScan(self, film_titles):
-        """
-        Requeue missed films to scan
-        """
-        jw_search_url = self.get_jw_country_url()
-        request_header = self.model.get_request_headers()
-        self.scan(film_titles, request_header, jw_search_url)
-
-    def scan(self, film_titles, request_header, jw_search_url):
-        for movie_name in film_titles:
-            worker = MovieScannerThread(movie_name, request_header, jw_search_url)
-            worker.signals.result.connect(self.worker_finished)
-            worker.autoDelete()
-            self.pool.tryStart(worker)
-
-    @QtCore.Slot(dict) # Explicitly declare as a slot
-    def worker_finished(self, result):
-        """
-        Obtaining result from worker once finished
-        """
-        print(result)
-        # Sending the result to the model bdd
-        self.model.add_scan_results(result)
-        # Requeue missing member to batch scans chunks
-        if self.pool.waitForDone():
-            print("Finished thread pool")
-            self.pool.clear()
-            self.checkRequeues()  
-
-
-    def checkRequeues(self):
-        """
-        Compares scan bdd agains film list to requeue missed movies
-        """
-        film_titles = self.model.get_film_list()
-        scanned_films = self.model.get_scan_results()
-        need_requeue = []
-
-        # print(list(scanned_films.keys()))
-        # print(film_titles)
-
-        for movie_name in film_titles:
-            # print(movie_name)
-            if movie_name not in list(scanned_films.keys()):
-                need_requeue.append(movie_name)
-
-        if len(need_requeue) > 0:
-            # print("would requeue : %s" % need_requeue)
-            print("DATA : %s" % list(self.model.get_scan_results().keys()))
-            self.requeueScan(need_requeue)
-        else:
-            print("All movies are done scannign")
-
-    def show_results(self):
-        # print("Calling show on results window from the results controller")
+    def show_window(self):
         self.view_results.show()
         self.view_results.resize(1280, 720)
-        # StyleSheets
         self.main_controller.applyStyleSheet(self.view_results)
-        # Applying other stylesheet on bottom row
-        widgetList = self.get_all_widgets(self.view_results.bottom_bar_layout)
-        self.label_styling(widgetList)
-        self.startScan()
-
-    def get_jw_country_url(self):
-        """
-        Fetches the country urls and returns the correct one based
-        on the gui selection
-        """
-        country_urls = self.model.get_justWatch_urls()
-        current_country = self.main_controller.fetch_gui_country()
-        # print("Current country index is : %s" % current_country)
-        # print("Current country url is %s" % country_urls[str(current_country)])
-        return country_urls[str(current_country)]
-
+        self.style_labels(self.get_all_widgets(self.view_results.bottom_bar_layout))
 
     def get_all_widgets(self, layout):
         """
@@ -504,7 +406,7 @@ class ResultsController(QtCore.QObject):
                 widgets.append(item.widget())
         return widgets
 
-    def label_styling(self, widgets):
+    def style_labels(self, widgets):
         """
         Apply other stylesheet on the bottom bar labels
         """

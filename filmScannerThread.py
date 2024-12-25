@@ -21,54 +21,45 @@ class MovieScannerThread(QtCore.QRunnable):
         self.movie_name = movie_name
         self.header = header
         self.jw_url = jw_url
-        #self.signal = signal
-        self.signals = MovieWorkersSignal()
+        self.signals = MovieWorkersSignal()  # Create once during initialization
 
     def run(self):
         """
-        Scan the JW page for the movie
+        Scanning a page for a movie
         """
-        if not hasattr (self, "movie_name"):
-            print("No movie name attrib !")
-            self.signals = MovieWorkersSignal()
-            self.signals.result.emit("None")
-            return
-        print("Scanning %s" % self.movie_name)
-        result_dict = {}
-        result_dict[self.movie_name] = {}
+        print(f"Starting scan for {self.movie_name}")
+        result_dict = {self.movie_name: {}}
+        search_url = f"{self.jw_url}{self.movie_name}"
+        print(search_url)
 
-        search_url = "%s%s" % (self.jw_url, self.movie_name)
-        html = requests.get(search_url, headers = self.header)
-
-        count = 1
         try:
-            if html.status_code == 429: # In case the serve finds too many requests 
+            # Simulate a network request
+            html = requests.get(search_url, headers=self.header)
+
+            if html.status_code == 429:  # Simulate too many requests
+                count = 1
                 while html.status_code == 429:
+                    print(f"Retrying {self.movie_name} (attempt {count})...")
                     sleep(count)
-                    html = requests.get(search_url, headers = self.header)
+                    html = requests.get(search_url, headers=self.header)
                     count += 1
-                # result_dict["Error"] = "Requeue"
 
             if html.status_code != 200:
                 result_dict[self.movie_name]["Error"] = True
-                #print("Error for movie %s on url %s" % (self.movie_name, search_url))
+                result_dict[self.movie_name]["Message"] = f"HTTP Error {html.status_code}"
             else:
                 result_dict[self.movie_name]["Error"] = False
                 result_dict[self.movie_name]["Data"] = self.parse_page(html)
         except Exception as e:
-            print("Error Scanning: %s" % self.movie_name)
             result_dict[self.movie_name]["Error"] = True
             result_dict[self.movie_name]["Exception"] = str(e)
-
-        # Emit result back to the main thread
-        self.signals.result.emit(result_dict)
-        # self.signals.finished.emit()
+        finally:
+            self.signals.result.emit(result_dict)
 
     def parse_page(self, html):
         """
         Parsing the JW html to get the relevant informations
         """
         soup = BeautifulSoup(html.content, features="html.parser")
-        return "Parsed Data placeholder"
-
+        return "Got : %s from Soup" % soup.find("a", class_="title-list-row__column-header").find("span", class_="header-title").get_text(strip=True)
 

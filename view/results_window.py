@@ -31,10 +31,21 @@ class ResultsWindow(QtWidgets.QWidget):
         ###############
         self.list_lbl = QtWidgets.QLabel("List Name")
 
+        # Log viewer
+        self.log = QtWidgets.QTextEdit(self)
+        self.log.setReadOnly(True)
+
+        # Bottom bar
         self.status_lbl = QtWidgets.QLabel("Scan in progress")
         self.percentage_lbl = QtWidgets.QLabel("{}%".format("50".zfill(2)))
         self.loading_bar = QtWidgets.QLabel("[=====_____]")
 
+
+        ###############
+        ##  LATYOUT  ##
+        ###############
+        self.log_layout = QtWidgets.QVBoxLayout()
+        self.log_layout.addWidget(self.log)
 
         self.bottom_bar_layout = QtWidgets.QHBoxLayout()
         self.bottom_bar_layout.addStretch()
@@ -43,12 +54,14 @@ class ResultsWindow(QtWidgets.QWidget):
         self.bottom_bar_layout.addWidget(self.loading_bar)
         self.bottom_bar_layout.addWidget(self.percentage_lbl)
 
+        self.layout.addLayout(self.log_layout)
         self.layout.addWidget(self.list_lbl)
         self.layout.addStretch()
         self.layout.addWidget(QHLine())
         self.layout.addLayout(self.bottom_bar_layout)
 
         self.setLayout(self.layout)
+
 
 
 class QVLine(QtWidgets.QFrame):

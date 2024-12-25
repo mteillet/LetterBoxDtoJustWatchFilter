@@ -2,7 +2,7 @@
 import sys
 from PySide2 import QtWidgets
 
-from main_controller import Init_main_controller, ResultsController
+from main_controller import MainController, ResultsController
 from model import Init_model
 from view.main_window import Main_Window
 from view.results_window import ResultsWindow
@@ -13,9 +13,7 @@ def main():
 
     initModel = Init_model()
     initView = Main_Window()
-    Init_main_controller(initModel, initView)
-    #initView = ResultsWindow()
-    #ResultsController(Init_model, initView)
+    MainController(initModel, initView)
 
     initView.resize(1280, 720)
     initView.show()
