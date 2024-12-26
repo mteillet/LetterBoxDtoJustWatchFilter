@@ -220,10 +220,11 @@ class MainController():
         """
         generic_list_dict = {}
         for key, url in generic_list.items():
+            print("Scraping : %s at %s ..." % (key, url))
             title, results = self.scrape_list(url)
             generic_list_dict[key] = results
             generic_list_dict[key]["title"] = title
-            print("Scraping %s - %s: DONE" % (key, url))
+            print("Scraping : %s OK" % key, url)
 
         return generic_list_dict
 
@@ -425,6 +426,7 @@ class ResultsController(QtCore.QObject):
         for i in range(round(percent*0.1)):
             bar = bar[:i+1] + "#" + bar[i+2:] 
         self.view_results.loading_bar.setText(bar)
+        self.view_results.status_lbl.setText("Scan done fore %s" % list(data.keys())[0])
 
 
     def get_all_widgets(self, layout):
