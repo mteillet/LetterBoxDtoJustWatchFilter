@@ -3,7 +3,9 @@ import re
 from time import sleep
 import threading
 
+import io
 import requests
+from PIL import Image
 from bs4 import BeautifulSoup
 from PySide2 import QtWidgets, QtCore
 from playwright.sync_api import sync_playwright
@@ -223,31 +225,47 @@ class MainController():
         generic_list_dict = {}
         for key, url in generic_list.items():
             print("Scraping : %s at %s ..." % (key, url))
-            title, results = self.scrape_list(url)
+            title, results = self.scrape_generic_list(url)
             generic_list_dict[key] = results
             generic_list_dict[key]["title"] = title
             print("Scraping : %s OK" % key)
 
         return generic_list_dict
 
-    def scrape_list(self, url):
+    def scrape_generic_list(self, url):
         """
         Scraping an url, returning a dict containing 
         the list of posters and the link to the list
         """
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url)
-            page.wait_for_selector("ul.poster-list img", state="visible")
-            soup = BeautifulSoup(page.content(), "html.parser")
-            browser.close()
+        white_poster = True
+        while white_poster:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                page = browser.new_page()
+                page.goto(url)
+                page.wait_for_selector("ul.poster-list img", state="visible")
+                soup = BeautifulSoup(page.content(), "html.parser")
+                browser.close()
 
-        title = soup.select_one(".list.-overlapped.-summary h2 a").get_text()
-        href = soup.select_one(".list.-overlapped.-summary a.list-link")["href"]
-        posters = [requests.get(poster.select_one("img")["src"]).content for poster in soup.select("ul.poster-list li.film-poster")[:5]]
-
+            title = soup.select_one(".list.-overlapped.-summary h2 a").get_text()
+            href = soup.select_one(".list.-overlapped.-summary a.list-link")["href"]
+            posters = [requests.get(poster.select_one("img")["src"]).content for poster in soup.select("ul.poster-list li.film-poster")[:5]]
+            for image in posters:
+                if self.check_blank_image(Image.open(io.BytesIO(image))):
+                    print("Placeholder image detected for posters of %s -- > Requeue" % title)
+                    white_poster = True
+                    break
+                else:
+                    white_poster = False
         return title, {"posters": list(reversed(posters)), "link" : href}
+
+    def check_blank_image(self, image):
+        """
+        Check if an image is blank (e.g., all white).
+        """
+        grayscale_image = image.convert("L")
+        extrema = grayscale_image.getextrema()
+        return extrema[0] == extrema[1]
 
     def applyStyleSheet(self, window):
         """

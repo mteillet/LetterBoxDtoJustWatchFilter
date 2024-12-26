@@ -54,10 +54,17 @@ class Main_Window(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.topBarLayout = QtWidgets.QHBoxLayout()
 
-        self.popularLayout = QtWidgets.QVBoxLayout()
+        self.popular_widget = QtWidgets.QWidget()
+        self.popularLayout = QtWidgets.QVBoxLayout(self.popular_widget)
         self.popularListsLayout = QtWidgets.QHBoxLayout()
 
+        self.categories_widget = QtWidgets.QWidget()
         self.categoriesLayout = QtWidgets.QVBoxLayout(self.scroll_content)
+
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.splitter.addWidget(self.popular_widget)
+        self.splitter.addWidget(self.categories_widget)
+        self.splitter.setSizes([1,200])
 
         # Top Bar
         self.layout.addLayout(self.topBarLayout)
@@ -71,18 +78,19 @@ class Main_Window(QtWidgets.QWidget):
         self.layout.addWidget(QHLine())
 
         # Popular Movies
-        self.layout.addStretch()
-        self.layout.addLayout(self.popularLayout)
+        #self.layout.addWidget(self.popular_widget)
         self.popularLayout.addWidget(self.popular_lbl)
         self.popularLayout.addLayout(self.popularListsLayout)
-        self.layout.addWidget(QHLine())
 
         # Categories Layouts
-        self.layout.addStretch()
-        self.layout.addWidget(self.classic_lbl)
-        self.layout.addWidget(self.scroll_area)
+        #self.layout.addStretch()
+        self.categories_layout_main = QtWidgets.QVBoxLayout(self.categories_widget)
+        self.categories_layout_main.addWidget(self.classic_lbl)
+        self.categories_layout_main.addWidget(self.scroll_area)
+        #self.layout.addWidget(self.categories_widget)
+        self.layout.addWidget(self.splitter)
         self.layout.addWidget(QHLine())
-        self.layout.addStretch()
+        #self.layout.addStretch()
 
         # Loop for classic categories layout
         current = 0
