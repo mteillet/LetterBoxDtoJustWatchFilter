@@ -38,7 +38,7 @@ class ResultsWindow(QtWidgets.QWidget):
         # Bottom bar
         self.status_lbl = QtWidgets.QLabel("Scan in progress")
         self.percentage_lbl = QtWidgets.QLabel("{}%".format("50".zfill(2)))
-        self.loading_bar = QtWidgets.QLabel("[=====_____]")
+        self.loading_bar = QtWidgets.QLabel("[__________]")
 
 
         ###############

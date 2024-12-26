@@ -416,9 +416,15 @@ class ResultsController(QtCore.QObject):
         """
         Updating the current film being scan and the scan percentage
         """
-        percent = str(18)
-
-        self.view_results.percentage_lbl.setText("{}%".format(percent.zfill(2)))
+        #percent = str(18)
+        #max = len(self.model.get_film_list())
+        #state = len(list(self.model.get_scan_results().keys()))
+        percent = 100 * len(list(self.model.get_scan_results().keys())) / len(self.model.get_film_list())
+        self.view_results.percentage_lbl.setText("{}%".format(str(round(percent)).zfill(2)))
+        bar = self.view_results.loading_bar.text()
+        for i in range(round(percent*0.1)):
+            bar = bar[:i+1] + "#" + bar[i+2:] 
+        self.view_results.loading_bar.setText(bar)
 
 
     def get_all_widgets(self, layout):
