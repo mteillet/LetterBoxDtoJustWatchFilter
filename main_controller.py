@@ -123,6 +123,7 @@ class MainController():
         self.model.add_scan_results(result)
         print("Worker Finished : %s" % result)
         self.log_message(result)
+        self.results_controller.update_ui_scan(result)
 
         QtCore.QCoreApplication.processEvents()
 
@@ -130,9 +131,7 @@ class MainController():
             self.log_message("FINISHED SCAN")
             for key in list(self.model.get_scan_results().keys()):
                 self.log_message("%s : %s" % (key, self.model.get_scan_results()[key]["Data"]))
-        # Optionally clean up the worker reference
-        #self.active_workers = [w for w in self.active_workers if w is not result["worker"]]
-        #print(result["nonExistentKey"])
+        # Need this print for now as raising an error is the only way found to ensure thread slots are always triggered
         print(result["dummyKey"])
 
     def log_message(self, message):
@@ -412,6 +411,15 @@ class ResultsController(QtCore.QObject):
         self.view_results.resize(1280, 720)
         self.main_controller.applyStyleSheet(self.view_results)
         self.style_labels(self.get_all_widgets(self.view_results.bottom_bar_layout))
+
+    def update_ui_scan(self, data):
+        """
+        Updating the current film being scan and the scan percentage
+        """
+        percent = str(18)
+
+        self.view_results.percentage_lbl.setText("{}%".format(percent.zfill(2)))
+
 
     def get_all_widgets(self, layout):
         """
