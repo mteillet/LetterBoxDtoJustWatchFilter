@@ -20,7 +20,7 @@ class MainController():
         self.model = model
         self.view = view
         self.pool = QtCore.QThreadPool()
-        self.pool.setMaxThreadCount(3)
+        self.pool.setMaxThreadCount(6)
 
         self.connect_initial_signals()
         self.initialize_generic_list()
@@ -109,17 +109,14 @@ class MainController():
 
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, len(film_titles)))
 
-        #self.scan(film_titles, request_header, jw_search_url)
         for movie_name in film_titles:
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
-            worker.signals.result.connect(self.worker_finished, QtCore.Qt.QueuedConnection)
+            worker.signals.result.connect(self.worker_result, QtCore.Qt.QueuedConnection)
             self.active_workers.append(worker)
             self.pool.start(worker)
-
-        print("Threading started")
  
     @QtCore.Slot(dict)
-    def worker_finished(self, result):
+    def worker_result(self, result):
         """
         Obtaining result from worker once finished
         """
@@ -127,14 +124,16 @@ class MainController():
         print("Worker Finished : %s" % result)
         self.log_message(result)
 
-        # Optionally clean up the worker reference
-        self.active_workers = [w for w in self.active_workers if w is not result["worker"]]
+        QtCore.QCoreApplication.processEvents()
 
-        if self.pool.activeThreadCount() == 0:
-            print("All Threads have completed")
-        else:
-            print("Active Threads : %s" % self.pool.activeThreadCount())
-            # pass
+        if len(list(self.model.get_scan_results().keys())) == len(self.model.get_film_list()):
+            self.log_message("FINISHED SCAN")
+            for key in list(self.model.get_scan_results().keys()):
+                self.log_message("%s : %s" % (key, self.model.get_scan_results()[key]["Data"]))
+        # Optionally clean up the worker reference
+        #self.active_workers = [w for w in self.active_workers if w is not result["worker"]]
+        #print(result["nonExistentKey"])
+        print(result["dummyKey"])
 
     def log_message(self, message):
         self.results_view.log.append(str(message))

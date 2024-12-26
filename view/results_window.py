@@ -55,6 +55,8 @@ class ResultsWindow(QtWidgets.QWidget):
         self.bottom_bar_layout.addWidget(self.percentage_lbl)
 
         self.layout.addLayout(self.log_layout)
+        self.layout.addWidget(QHLine())
+        self.layout.addStretch()
         self.layout.addWidget(self.list_lbl)
         self.layout.addStretch()
         self.layout.addWidget(QHLine())

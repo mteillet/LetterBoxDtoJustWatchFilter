@@ -43,7 +43,7 @@ class MovieScannerThread(QtCore.QRunnable):
                     print(f"Retrying {self.movie_name} (attempt {count})...")
                     sleep(count)
                     html = requests.get(search_url, headers=self.header)
-                    count += 1
+                    count += 4
 
             if html.status_code != 200:
                 result_dict[self.movie_name]["Error"] = True
@@ -56,6 +56,7 @@ class MovieScannerThread(QtCore.QRunnable):
             result_dict[self.movie_name]["Exception"] = str(e)
         finally:
             self.signals.result.emit(result_dict)
+            #self.signals.finished.emit()
             print("EMITTING RESULTS : %s" % result_dict)
 
     def parse_page(self, html):
