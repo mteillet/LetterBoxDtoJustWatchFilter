@@ -34,11 +34,12 @@ class ResultsWindow(QtWidgets.QWidget):
         # Log viewer
         self.log = QtWidgets.QTextEdit(self)
         self.log.setReadOnly(True)
-        self.log.setFixedHeight(30)
+        #self.log.setFixedHeight(30)
+        #print(dir(self.log))
         self.log.setMinimumHeight(30)
 
         # Splitter for resizable sections
-        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
         # Bottom bar
         self.status_lbl = QtWidgets.QLabel("Scan in progress")
@@ -57,10 +58,12 @@ class ResultsWindow(QtWidgets.QWidget):
         self.bottom_bar_layout.addWidget(self.status_lbl)
         self.bottom_bar_layout.addWidget(QVLine())
         self.bottom_bar_layout.addWidget(self.loading_bar)
+        self.bottom_bar_layout.addWidget(QVLine())
         self.bottom_bar_layout.addWidget(self.percentage_lbl)
 
         self.splitter.addWidget(self.log)
         self.splitter.addWidget(self.list_lbl)
+        self.splitter.setSizes([0,200]) # Hiding the log by default
         self.layout.addWidget(self.splitter)
         #self.layout.addLayout(self.log_layout)
         #self.layout.addWidget(QHLine())

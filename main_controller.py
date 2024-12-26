@@ -122,7 +122,7 @@ class MainController():
         """
         self.model.add_scan_results(result)
         print("Worker Finished : %s" % result)
-        self.log_message(result)
+        self.log_message("%s : %s/%s" % (result, len(list(self.model.get_scan_results().keys())), len(self.model.get_film_list())))
         self.results_controller.update_ui_scan(result)
 
         QtCore.QCoreApplication.processEvents()
@@ -131,6 +131,8 @@ class MainController():
             self.log_message("FINISHED SCAN")
             for key in list(self.model.get_scan_results().keys()):
                 self.log_message("%s : %s" % (key, self.model.get_scan_results()[key]["Data"]))
+            self.log_message("%s films scanned" % len(list(self.model.get_scan_results().keys())))
+            self.results_controller.update_ui_scan_finished(len(self.model.get_film_list()))
         # Need this print for now as raising an error is the only way found to ensure thread slots are always triggered
         print(result["dummyKey"])
 
@@ -224,7 +226,7 @@ class MainController():
             title, results = self.scrape_list(url)
             generic_list_dict[key] = results
             generic_list_dict[key]["title"] = title
-            print("Scraping : %s OK" % key, url)
+            print("Scraping : %s OK" % key)
 
         return generic_list_dict
 
@@ -427,6 +429,12 @@ class ResultsController(QtCore.QObject):
             bar = bar[:i+1] + "#" + bar[i+2:] 
         self.view_results.loading_bar.setText(bar)
         self.view_results.status_lbl.setText("Scan done fore %s" % list(data.keys())[0])
+
+    def update_ui_scan_finished(self, data):
+        """
+        Updating the UI when scan is over
+        """
+        self.view_results.status_lbl.setText("Finished scanning %s films" % str(data))
 
 
     def get_all_widgets(self, layout):
