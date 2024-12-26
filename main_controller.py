@@ -77,6 +77,7 @@ class MainController():
 
         print("Scanning list : %s" % self.model.get_list_scan_url())
         film_list = self.scan_list()
+        print("FILM LIST :" % film_list)
         self.model.set_film_list(film_list)
 
         print("Movies:", *film_list, sep="\n")
@@ -97,20 +98,22 @@ class MainController():
         Getting the film list from model bdd and starting the scan
         """
         # Dummy data for testing
-        film_titles = ['hiroshima-mon-amour', 'in-the-mood-for-love', 'her', 'pretty-in-pink', '10-things-i-hate-about-you', 'whats-your-number', 'made-of-honor', 'when-harry-met-sally', 'set-it-up', 'love-rosie', 'before-sunrise', 'how-to-lose-a-guy-in-10-days', 'pride-prejudice', 'letters-to-juliet', 'plus-one-2019', 'romeo-juliet-1996', 'emma-2020', 'tune-in-for-love', 'chungking-express', 'stuck-in-love', 'just-my-luck-2006', '500-days-of-summer', 'eternal-sunshine-of-the-spotless-mind', 'the-notebook', 'your-name', 'la-la-land', 'blue-valentine', 'flipped', 'portrait-of-a-lady-on-fire', 'carol-2015', 'happy-together-1997']
-        jw_search_url = "https://www.justwatch.com/fr/recherche?q="
-        headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        #film_titles = ['hiroshima-mon-amour', 'in-the-mood-for-love', 'her', 'pretty-in-pink', '10-things-i-hate-about-you', 'whats-your-number', 'made-of-honor', 'when-harry-met-sally', 'set-it-up', 'love-rosie', 'before-sunrise', 'how-to-lose-a-guy-in-10-days', 'pride-prejudice', 'letters-to-juliet', 'plus-one-2019', 'romeo-juliet-1996', 'emma-2020', 'tune-in-for-love', 'chungking-express', 'stuck-in-love', 'just-my-luck-2006', '500-days-of-summer', 'eternal-sunshine-of-the-spotless-mind', 'the-notebook', 'your-name', 'la-la-land', 'blue-valentine', 'flipped', 'portrait-of-a-lady-on-fire', 'carol-2015', 'happy-together-1997']
+        #jw_search_url = "https://www.justwatch.com/fr/recherche?q="
+        #headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        self.active_workers = []
 
-        #film_titles = self.model.get_film_list()
-        #jw_search_url = self.get_jw_country_url()
-        #request_header = self.model.get_request_headers()
+        film_titles = self.model.get_film_list()
+        jw_search_url = self.get_jw_country_url()
+        request_header = self.model.get_request_headers()
 
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, len(film_titles)))
 
         #self.scan(film_titles, request_header, jw_search_url)
         for movie_name in film_titles:
-            worker = MovieScannerThread(movie_name, headers, jw_search_url)
-            worker.signals.result.connect(self.worker_finished)
+            worker = MovieScannerThread(movie_name, request_header, jw_search_url)
+            worker.signals.result.connect(self.worker_finished, QtCore.Qt.QueuedConnection)
+            self.active_workers.append(worker)
             self.pool.start(worker)
 
         print("Threading started")
@@ -124,11 +127,25 @@ class MainController():
         print("Worker Finished : %s" % result)
         self.log_message(result)
 
+        # Optionally clean up the worker reference
+        self.active_workers = [w for w in self.active_workers if w is not result["worker"]]
+
         if self.pool.activeThreadCount() == 0:
             print("All Threads have completed")
+        else:
+            print("Active Threads : %s" % self.pool.activeThreadCount())
+            # pass
 
     def log_message(self, message):
         self.results_view.log.append(str(message))
+
+    def get_jw_country_url(self):
+        """
+        Fetches the country urls and returns the correct one based
+        on the gui selection
+        """
+        country_urls = self.model.get_justWatch_urls()
+        return country_urls[str(self.fetch_gui_country())]
 
     def scan_list(self):
         """
@@ -148,13 +165,15 @@ class MainController():
 
             soup = BeautifulSoup(response.content, "html.parser")
             posters = soup.find_all("li", class_="poster-container")
-            if not posters:
+            if not soup.find_all("li", class_="poster-container"):
                 break
 
             for poster in posters:
-                film_slug = re.search('data-film-slug==["\'](.*?)["\']', str(poster))
+                container = poster.find("div", class_ = "really-lazy-load")
+                regex = re.compile('data-film-slug=["\'](.*?)["\']')
+                film_slug = regex.search(str(container)).group(1)
                 if film_slug:
-                    film_list.append(film_slug.group(1))
+                    film_list.append(film_slug)
 
             current_page += 1
 

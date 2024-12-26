@@ -29,6 +29,7 @@ class MovieScannerThread(QtCore.QRunnable):
         """
         print(f"Starting scan for {self.movie_name}")
         result_dict = {self.movie_name: {}}
+        #result_dict["worker"] = self
         search_url = f"{self.jw_url}{self.movie_name}"
         print(search_url)
 
@@ -55,6 +56,7 @@ class MovieScannerThread(QtCore.QRunnable):
             result_dict[self.movie_name]["Exception"] = str(e)
         finally:
             self.signals.result.emit(result_dict)
+            print("EMITTING RESULTS : %s" % result_dict)
 
     def parse_page(self, html):
         """
