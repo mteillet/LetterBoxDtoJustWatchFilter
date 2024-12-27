@@ -75,6 +75,7 @@ class MainController():
         """
         Launching the results view after scanning the clicked list
         """
+        self.model.reset_scan_results()
         self.model.set_list_scan_url(self.ensure_full_url(link))
 
         print("Scanning list : %s" % self.model.get_list_scan_url())
