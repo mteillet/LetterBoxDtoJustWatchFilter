@@ -29,26 +29,42 @@ class ResultsWindow(QtWidgets.QWidget):
         ###############
         ##  WIDGETS  ##
         ###############
-        self.list_lbl = QtWidgets.QLabel("List Name")
-
         # Log viewer
         self.log = QtWidgets.QTextEdit(self)
         self.log.setReadOnly(True)
-        #self.log.setFixedHeight(30)
-        #print(dir(self.log))
         self.log.setMinimumHeight(30)
 
         # Splitter for resizable sections
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.splitterV = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+
+        # Widgets for containing the serivces and movies
+        self.services_widget = QtWidgets.QWidget()
+        self.film_widget = QtWidgets.QWidget()
+
+        # Scroll Areas
+        self.services_stream_scroll_area = QtWidgets.QScrollArea()
+        self.services_stream_scroll_area.setWidgetResizable(True)
+        self.services_rent_scroll_area = QtWidgets.QScrollArea()
+        self.services_rent_scroll_area.setWidgetResizable(True)
+
+        # Scroll area content stream and rent
+        self.services_stream_scroll_layout_widget = QtWidgets.QWidget()
+        self.services_stream_scroll_layout = QtWidgets.QVBoxLayout(self.services_stream_scroll_layout_widget)
+        self.services_stream_scroll_layout_widget.setLayout(self.services_stream_scroll_layout)
+        self.services_stream_scroll_area.setWidget(self.services_stream_scroll_layout_widget)
+        self.services_rent_scroll_layout_widget = QtWidgets.QWidget()
+        self.services_rent_scroll_layout = QtWidgets.QVBoxLayout(self.services_rent_scroll_layout_widget)
+        self.services_rent_scroll_layout_widget.setLayout(self.services_rent_scroll_layout)
+        self.services_rent_scroll_area.setWidget(self.services_rent_scroll_layout_widget)
 
         # Bottom bar
         self.status_lbl = QtWidgets.QLabel("Scan in progress")
         self.percentage_lbl = QtWidgets.QLabel("{}%".format("50".zfill(2)))
         self.loading_bar = QtWidgets.QLabel("[__________]")
 
-
         ###############
-        ##  LATYOUT  ##
+        ##   LAYOUT  ##
         ###############
         self.log_layout = QtWidgets.QVBoxLayout()
         self.log_layout.addWidget(self.log)
@@ -61,20 +77,44 @@ class ResultsWindow(QtWidgets.QWidget):
         self.bottom_bar_layout.addWidget(QVLine())
         self.bottom_bar_layout.addWidget(self.percentage_lbl)
 
+        # Splitters Layout
         self.splitter.addWidget(self.log)
-        self.splitter.addWidget(self.list_lbl)
-        self.splitter.setSizes([0,200]) # Hiding the log by default
+        self.splitter.addWidget(self.splitterV)
+        # Hiding the log by default
+        self.splitter.setSizes([0,200])
         self.layout.addWidget(self.splitter)
-        #self.layout.addLayout(self.log_layout)
-        #self.layout.addWidget(QHLine())
-        #self.layout.addStretch()
-        #self.layout.addWidget(self.list_lbl)
-        self.layout.addStretch()
+        # Splitter services and movies
+        self.splitterV.addWidget(self.services_widget)
+        self.splitterV.addWidget(self.film_widget)
+
+        # Layout for services list
+        self.services_layout = QtWidgets.QVBoxLayout(self.services_widget)
+        self.services_layout.addWidget(QtWidgets.QLabel("Streaming Services:"))
+        self.services_layout.addWidget(self.services_stream_scroll_area)
+        self.services_layout.addWidget(QtWidgets.QLabel("Renting Services:"))
+        self.services_layout.addWidget(self.services_rent_scroll_area)
+        #for i in range(50):
+        #    self.services_stream_scroll_layout.addWidget(QtWidgets.QRadioButton("Placeholder %s" % str(i+1)))
+
+        # self.layout.addStretch()
         self.layout.addWidget(QHLine())
         self.layout.addLayout(self.bottom_bar_layout)
 
         self.setLayout(self.layout)
 
+    def create_service_stream_radio_button(self, data):
+        """
+        Create a radio button for a new service, and add it to the services_stream_scroll_layout
+        """
+        new_button = QtWidgets.QRadioButton(data)
+        self.services_stream_scroll_layout.addWidget(new_button)
+
+    def create_service_rent_radio_button(self, data):
+        """
+        Create a radio button for a new service, and add it to the services_rent_scroll_layout
+        """
+        new_button = QtWidgets.QRadioButton(data)
+        self.services_rent_scroll_layout.addWidget(new_button)
 
 
 class QVLine(QtWidgets.QFrame):

@@ -446,10 +446,42 @@ class ResultsController(QtCore.QObject):
         self.view_results.loading_bar.setText(bar)
         self.view_results.status_lbl.setText("Scan done fore %s" % list(data.keys())[0])
 
+        self.add_widgets_to_ui(data)
+
         # Adding this call to update_ui_scan_finished in case one of the worker signals is triggered
         # after the initial call to update_ui_scan_finished
         if len(list(self.model.get_scan_results().keys())) == len(self.model.get_film_list()):
             self.update_ui_scan_finished(len(self.model.get_film_list()))
+
+    def add_widgets_to_ui(self, data):
+        """
+        Adding the scan result to the UI and the bdd
+        """
+        film_title = list(data.keys())[0]
+        self.handle_stream_and_rent_services_ui(data, film_title)
+
+    def handle_stream_and_rent_services_ui(self, data, film_title):
+        """
+        If stream and/or rent service found, add to bdd if it doesn't already exist 
+        also handles layout and radio buttons creation in the UI
+        """
+        # Stream
+        if data[film_title]["Data"]["stream"]:
+            for key, value in data[film_title]["Data"]["stream_list"].items():
+                if key not in self.model.get_stream_services():
+                    # Need to add to the streaming services in bdd and create the layout
+                    self.model.add_stream_service({key : "placeholderLayout"})
+                    # Also need to create the radio button in UI to display the service
+                    self.view_results.create_service_stream_radio_button(key)
+        # Rent
+        if data[film_title]["Data"]["rent"]:
+            for key, value in data[film_title]["Data"]["rent_list"].items():
+                if key not in self.model.get_rent_services():
+                    # Need to add to the streaming services in bdd and create the layout
+                    self.model.add_rent_service({key : "placeholderLayout"})
+                    # Also need to create the radio button in UI to display the service
+                    self.view_results.create_service_rent_radio_button(key)
+
 
     def update_ui_scan_finished(self, data):
         """
