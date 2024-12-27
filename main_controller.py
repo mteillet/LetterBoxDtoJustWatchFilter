@@ -438,9 +438,6 @@ class ResultsController(QtCore.QObject):
         """
         Updating the current film being scan and the scan percentage
         """
-        #percent = str(18)
-        #max = len(self.model.get_film_list())
-        #state = len(list(self.model.get_scan_results().keys()))
         percent = 100 * len(list(self.model.get_scan_results().keys())) / len(self.model.get_film_list())
         self.view_results.percentage_lbl.setText("{}%".format(str(round(percent)).zfill(2)))
         bar = self.view_results.loading_bar.text()
@@ -448,6 +445,11 @@ class ResultsController(QtCore.QObject):
             bar = bar[:i+1] + "#" + bar[i+2:] 
         self.view_results.loading_bar.setText(bar)
         self.view_results.status_lbl.setText("Scan done fore %s" % list(data.keys())[0])
+
+        # Adding this call to update_ui_scan_finished in case one of the worker signals is triggered
+        # after the initial call to update_ui_scan_finished
+        if len(list(self.model.get_scan_results().keys())) == len(self.model.get_film_list()):
+            self.update_ui_scan_finished(len(self.model.get_film_list()))
 
     def update_ui_scan_finished(self, data):
         """
