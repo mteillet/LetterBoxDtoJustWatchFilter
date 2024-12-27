@@ -37,10 +37,13 @@ class ResultsWindow(QtWidgets.QWidget):
         # Splitter for resizable sections
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.splitterV = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        self.splitter_services = QtWidgets.QSplitter(QtCore.Qt.Vertical)
 
         # Widgets for containing the serivces and movies
         self.services_widget = QtWidgets.QWidget()
         self.film_widget = QtWidgets.QWidget()
+        self.services_stream_widget = QtWidgets.QWidget()
+        self.services_rent_widget = QtWidgets.QWidget()
 
         # Scroll Areas
         self.services_stream_scroll_area = QtWidgets.QScrollArea()
@@ -84,15 +87,20 @@ class ResultsWindow(QtWidgets.QWidget):
         self.splitter.setSizes([0,200])
         self.layout.addWidget(self.splitter)
         # Splitter services and movies
-        self.splitterV.addWidget(self.services_widget)
+        self.splitterV.addWidget(self.splitter_services)
         self.splitterV.addWidget(self.film_widget)
+        # Splitter Services only
+        self.splitter_services.addWidget(self.services_stream_widget)
+        self.splitter_services.addWidget(self.services_rent_widget)
+        self.splitter_services.setSizes([75,25])
 
         # Layout for services list
-        self.services_layout = QtWidgets.QVBoxLayout(self.services_widget)
-        self.services_layout.addWidget(QtWidgets.QLabel("Streaming Services:"))
-        self.services_layout.addWidget(self.services_stream_scroll_area)
-        self.services_layout.addWidget(QtWidgets.QLabel("Renting Services:"))
-        self.services_layout.addWidget(self.services_rent_scroll_area)
+        self.services_stream_lay = QtWidgets.QVBoxLayout(self.services_stream_widget)
+        self.services_stream_lay.addWidget(QtWidgets.QLabel("Streaming Services:"))
+        self.services_stream_lay.addWidget(self.services_stream_scroll_area)
+        self.services_rent_lay = QtWidgets.QVBoxLayout(self.services_rent_widget)
+        self.services_rent_lay.addWidget(QtWidgets.QLabel("Renting Services:"))
+        self.services_rent_lay.addWidget(self.services_rent_scroll_area)
         #for i in range(50):
         #    self.services_stream_scroll_layout.addWidget(QtWidgets.QRadioButton("Placeholder %s" % str(i+1)))
 
