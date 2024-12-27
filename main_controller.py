@@ -22,7 +22,7 @@ class MainController():
         self.model = model
         self.view = view
         self.pool = QtCore.QThreadPool()
-        self.pool.setMaxThreadCount(6)
+        #self.pool.setMaxThreadCount(6)
 
         self.connect_initial_signals()
         self.initialize_generic_list()
@@ -125,7 +125,7 @@ class MainController():
         """
         self.model.add_scan_results(result)
         print("Worker Finished : %s" % result)
-        self.log_message("%s : %s/%s" % (result, len(list(self.model.get_scan_results().keys())), len(self.model.get_film_list())))
+        self.log_message("%s found as : %s ; %s/%s" % (list(result.keys())[0], result[list(result.keys())[0]]["Data"]["jw_title"], len(list(self.model.get_scan_results().keys())), len(self.model.get_film_list())))
         self.results_controller.update_ui_scan(result)
 
         QtCore.QCoreApplication.processEvents()
@@ -133,7 +133,7 @@ class MainController():
         if len(list(self.model.get_scan_results().keys())) == len(self.model.get_film_list()):
             self.log_message("FINISHED SCAN")
             for key in list(self.model.get_scan_results().keys()):
-                self.log_message("%s : %s" % (key, self.model.get_scan_results()[key]["Data"]))
+                self.log_message("%s = Stream : %s services, Rent : %s services" % (key, len(self.model.get_scan_results()[key]["Data"]["stream_list"]), len(self.model.get_scan_results()[key]["Data"]["rent_list"]) ))
             self.log_message("%s films scanned" % len(list(self.model.get_scan_results().keys())))
             self.results_controller.update_ui_scan_finished(len(self.model.get_film_list()))
         # Need this print for now as raising an error is the only way found to ensure thread slots are always triggered
