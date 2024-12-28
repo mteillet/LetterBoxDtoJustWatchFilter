@@ -136,6 +136,7 @@ class ResultsWindow(QtWidgets.QWidget):
         """
         service_movie_scroll_area = QtWidgets.QScrollArea()
         service_movie_scroll_area.setWidgetResizable(True)
+        service_movie_scroll_area.setMinimumHeight(240)
         service_movie_scroll_widget = QtWidgets.QWidget()
         service_movie_scroll_layout = QtWidgets.QHBoxLayout(service_movie_scroll_widget)
         service_movie_scroll_widget.setLayout(service_movie_scroll_layout)
@@ -150,12 +151,18 @@ class ResultsWindow(QtWidgets.QWidget):
 
         return {"name" : data, "layout" : service_movie_scroll_layout, "label" : service_label}
 
-    def add_movie_to_service_layout(self, movie, layout):
+    def add_movie_to_service_layout(self, movie, poster, layout):
         """
         Adding a movie to its corresponding streaming service layout
         """
-        #print("layout" , layout)
+        # TO DO 
+        # Need to setup custom QPushButtons widgets, with the movie title
+        # The movie poster, and needs to open the url link when the button is clicked
+        posterSize = QtCore.QSize(140, 210)
+        poster_image = QtGui.QImage.fromData(poster)
+        poster_pixmap = QtGui.QPixmap.fromImage(poster_image).scaled(posterSize, QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
         movie_widget = QtWidgets.QLabel(movie)
+        movie_widget.setPixmap(poster_pixmap)
         layout.addWidget(movie_widget)
 
 

@@ -70,7 +70,7 @@ class MovieScannerThread(QtCore.QRunnable):
         data_dict = {}
         soup = BeautifulSoup(html.content, features="html.parser")
         data_dict["jw_title"] = soup.find("a", class_="title-list-row__column-header").find("span", class_="header-title").get_text(strip=True)
-        data_dict["poster"] = soup.find("picture", class_="picture-comp title-poster__image").find("img")["src"]
+        data_dict["poster"] = requests.get(soup.find("picture", class_="picture-comp title-poster__image").find("img")["src"]).content
 
         # Checking rent and stream availability
         streamSoup = soup.find("div", class_="title-list-row__row").find("div", class_="buybox-row stream inline")

@@ -124,7 +124,7 @@ class MainController():
         Obtaining result from worker once finished
         """
         self.model.add_scan_results(result)
-        print("Worker Finished : %s" % result)
+        print("Worker Finished : %s = %s" % (list(result.keys())[0], result[list(result.keys())[0]]["Data"].keys()))
         self.log_message("%s found as : %s ; %s/%s" % (list(result.keys())[0], result[list(result.keys())[0]]["Data"]["jw_title"], len(list(self.model.get_scan_results().keys())), len(self.model.get_film_list())))
         self.results_controller.update_ui_scan(result)
 
@@ -465,6 +465,8 @@ class ResultsController(QtCore.QObject):
         If stream and/or rent service found, add to bdd if it doesn't already exist 
         also handles layout and radio buttons creation in the UI
         """
+
+
         # Stream
         if data[film_title]["Data"]["stream"]:
             for key, value in data[film_title]["Data"]["stream_list"].items():
@@ -475,7 +477,8 @@ class ResultsController(QtCore.QObject):
                     self.model.add_stream_service({key : new_service_layout})
                     # Create its service radio button
                     self.view_results.create_service_stream_radio_button(key)
-                self.view_results.add_movie_to_service_layout(film_title, self.model.get_stream_services()[key]["layout"])
+                # Adding the movie to the matching lists
+                self.view_results.add_movie_to_service_layout(film_title, data[film_title]["Data"]["poster"], self.model.get_stream_services()[key]["layout"])
         # Rent
         if data[film_title]["Data"]["rent"]:
             for key, value in data[film_title]["Data"]["rent_list"].items():
