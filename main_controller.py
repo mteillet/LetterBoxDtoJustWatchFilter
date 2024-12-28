@@ -469,17 +469,18 @@ class ResultsController(QtCore.QObject):
         if data[film_title]["Data"]["stream"]:
             for key, value in data[film_title]["Data"]["stream_list"].items():
                 if key not in self.model.get_stream_services():
-                    # Need to add to the streaming services in bdd and create the layout
-                    self.model.add_stream_service({key : "placeholderLayout"})
-                    # Also need to create the radio button in UI to display the service
+                    # Creating the layout for the movies linked to the service
+                    new_service_layout = self.view_results.create_service_movies_layout(key)
+                    # Registers layout and key to bdd
+                    self.model.add_stream_service({key : new_service_layout})
+                    # Create its service radio button
                     self.view_results.create_service_stream_radio_button(key)
+                self.view_results.add_movie_to_service_layout(film_title, self.model.get_stream_services()[key]["layout"])
         # Rent
         if data[film_title]["Data"]["rent"]:
             for key, value in data[film_title]["Data"]["rent_list"].items():
                 if key not in self.model.get_rent_services():
-                    # Need to add to the streaming services in bdd and create the layout
                     self.model.add_rent_service({key : "placeholderLayout"})
-                    # Also need to create the radio button in UI to display the service
                     self.view_results.create_service_rent_radio_button(key)
 
 

@@ -41,25 +41,30 @@ class ResultsWindow(QtWidgets.QWidget):
 
         # Widgets for containing the serivces and movies
         self.services_widget = QtWidgets.QWidget()
-        self.film_widget = QtWidgets.QWidget()
         self.services_stream_widget = QtWidgets.QWidget()
         self.services_rent_widget = QtWidgets.QWidget()
+        # Widget containing all the different movies scroll areas
+        self.films_services_layout_widget = QtWidgets.QWidget()
 
         # Scroll Areas
         self.services_stream_scroll_area = QtWidgets.QScrollArea()
         self.services_stream_scroll_area.setWidgetResizable(True)
         self.services_rent_scroll_area = QtWidgets.QScrollArea()
         self.services_rent_scroll_area.setWidgetResizable(True)
+        self.all_movies_scroll_area = QtWidgets.QScrollArea()
+        self.all_movies_scroll_area.setWidgetResizable(True)
 
         # Scroll area content stream and rent
         self.services_stream_scroll_layout_widget = QtWidgets.QWidget()
         self.services_stream_scroll_layout = QtWidgets.QVBoxLayout(self.services_stream_scroll_layout_widget)
         self.services_stream_scroll_layout_widget.setLayout(self.services_stream_scroll_layout)
         self.services_stream_scroll_area.setWidget(self.services_stream_scroll_layout_widget)
+        # Scroll area content all movies 
         self.services_rent_scroll_layout_widget = QtWidgets.QWidget()
         self.services_rent_scroll_layout = QtWidgets.QVBoxLayout(self.services_rent_scroll_layout_widget)
         self.services_rent_scroll_layout_widget.setLayout(self.services_rent_scroll_layout)
         self.services_rent_scroll_area.setWidget(self.services_rent_scroll_layout_widget)
+        self.all_movies_scroll_area.setWidget(self.films_services_layout_widget)
 
         # Bottom bar
         self.status_lbl = QtWidgets.QLabel("Scan in progress")
@@ -88,7 +93,7 @@ class ResultsWindow(QtWidgets.QWidget):
         self.layout.addWidget(self.splitter)
         # Splitter services and movies
         self.splitterV.addWidget(self.splitter_services)
-        self.splitterV.addWidget(self.film_widget)
+        self.splitterV.addWidget(self.all_movies_scroll_area)
         # Splitter Services only
         self.splitter_services.addWidget(self.services_stream_widget)
         self.splitter_services.addWidget(self.services_rent_widget)
@@ -101,8 +106,9 @@ class ResultsWindow(QtWidgets.QWidget):
         self.services_rent_lay = QtWidgets.QVBoxLayout(self.services_rent_widget)
         self.services_rent_lay.addWidget(QtWidgets.QLabel("Renting Services:"))
         self.services_rent_lay.addWidget(self.services_rent_scroll_area)
-        #for i in range(50):
-        #    self.services_stream_scroll_layout.addWidget(QtWidgets.QRadioButton("Placeholder %s" % str(i+1)))
+
+        # Layout for movies
+        self.films_services_layout = QtWidgets.QVBoxLayout(self.films_services_layout_widget)
 
         # self.layout.addStretch()
         self.layout.addWidget(QHLine())
@@ -123,6 +129,34 @@ class ResultsWindow(QtWidgets.QWidget):
         """
         new_button = QtWidgets.QRadioButton(data)
         self.services_rent_scroll_layout.addWidget(new_button)
+
+    def create_service_movies_layout(self, data):
+        """
+        Creating necessary scroll area and layout to be able to add movies to it
+        """
+        service_movie_scroll_area = QtWidgets.QScrollArea()
+        service_movie_scroll_area.setWidgetResizable(True)
+        service_movie_scroll_widget = QtWidgets.QWidget()
+        service_movie_scroll_layout = QtWidgets.QHBoxLayout(service_movie_scroll_widget)
+        service_movie_scroll_widget.setLayout(service_movie_scroll_layout)
+        service_movie_scroll_area.setWidget(service_movie_scroll_widget)
+
+        # Setting up a label widget to show the service name for clarity
+        service_label = QtWidgets.QLabel(data)
+
+        # Adding title of the service before the scrollbar
+        self.films_services_layout.addWidget(service_label)
+        self.films_services_layout.addWidget(service_movie_scroll_area)
+
+        return {"name" : data, "layout" : service_movie_scroll_layout, "label" : service_label}
+
+    def add_movie_to_service_layout(self, movie, layout):
+        """
+        Adding a movie to its corresponding streaming service layout
+        """
+        #print("layout" , layout)
+        movie_widget = QtWidgets.QLabel(movie)
+        layout.addWidget(movie_widget)
 
 
 class QVLine(QtWidgets.QFrame):
