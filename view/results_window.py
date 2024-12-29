@@ -136,7 +136,7 @@ class ResultsWindow(QtWidgets.QWidget):
         """
         service_movie_scroll_area = QtWidgets.QScrollArea()
         service_movie_scroll_area.setWidgetResizable(True)
-        service_movie_scroll_area.setMinimumHeight(240)
+        service_movie_scroll_area.setMinimumHeight(270)
         service_movie_scroll_widget = QtWidgets.QWidget()
         service_movie_scroll_layout = QtWidgets.QHBoxLayout(service_movie_scroll_widget)
         service_movie_scroll_widget.setLayout(service_movie_scroll_layout)
@@ -151,19 +151,53 @@ class ResultsWindow(QtWidgets.QWidget):
 
         return {"name" : data, "layout" : service_movie_scroll_layout, "label" : service_label}
 
-    def add_movie_to_service_layout(self, movie, poster, layout):
+    def add_movie_to_service_layout(self, movie, poster, link, layout):
         """
         Adding a movie to its corresponding streaming service layout
         """
-        # TO DO 
-        # Need to setup custom QPushButtons widgets, with the movie title
         # The movie poster, and needs to open the url link when the button is clicked
         posterSize = QtCore.QSize(140, 210)
         poster_image = QtGui.QImage.fromData(poster)
         poster_pixmap = QtGui.QPixmap.fromImage(poster_image).scaled(posterSize, QtCore.Qt.KeepAspectRatioByExpanding, QtCore.Qt.SmoothTransformation)
-        movie_widget = QtWidgets.QLabel(movie)
-        movie_widget.setPixmap(poster_pixmap)
+        movie_widget = MovieButton(poster_pixmap, movie, link)
         layout.addWidget(movie_widget)
+
+        return movie_widget
+
+
+class MovieButton(QtWidgets.QPushButton):
+    def __init__(self, pixmap, movie_name, link, parent = None):
+        super(MovieButton, self).__init__(parent)
+
+        self.link = link
+
+        self.layout = QtWidgets.QVBoxLayout(self)
+
+        # QLabel for the image
+        self.image_label = QtWidgets.QLabel()
+        self.image_label.setPixmap(pixmap)
+        self.image_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.image_label.setStyleSheet("background-color: transparent;")
+
+        # QLabel for text
+        self.text_movie_label = QtWidgets.QLabel(movie_name)
+        self.text_movie_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.text_movie_label.setStyleSheet("font-size: 12px; background-color: transparent;")
+
+        # Layout
+        self.layout.addWidget(self.image_label)
+        self.layout.addWidget(self.text_movie_label)
+
+        self.setLayout(self.layout)
+        self.setStyleSheet("border: none;")
+
+        # Resize button depending on its content
+        label_width = self.text_movie_label.fontMetrics().horizontalAdvance(movie_name) + 50
+        if label_width < 180:
+            label_width = 180
+        self.setMinimumSize(label_width, 240)
+        #self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
 
 class QVLine(QtWidgets.QFrame):

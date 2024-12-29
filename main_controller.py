@@ -1,10 +1,11 @@
 # main_controller.py
 import re
 from time import sleep
-import threading
+from functools import partial
 
 import io
 import requests
+import webbrowser
 from PIL import Image
 from bs4 import BeautifulSoup
 from PySide2 import QtWidgets, QtCore
@@ -12,7 +13,6 @@ from playwright.sync_api import sync_playwright
 
 from view.results_window import ResultsWindow
 from filmScannerThread import MovieScannerThread
-#from threading_debug import MovieScannerThread 
 
 class MainController():
     def __init__(self, model, view):
@@ -22,7 +22,7 @@ class MainController():
         self.model = model
         self.view = view
         self.pool = QtCore.QThreadPool()
-        #self.pool.setMaxThreadCount(6)
+        self.pool.setMaxThreadCount(6)
 
         self.connect_initial_signals()
         self.initialize_generic_list()
@@ -465,7 +465,7 @@ class ResultsController(QtCore.QObject):
         If stream and/or rent service found, add to bdd if it doesn't already exist 
         also handles layout and radio buttons creation in the UI
         """
-
+        self.new_movie_buttons = []
 
         # Stream
         if data[film_title]["Data"]["stream"]:
@@ -478,13 +478,22 @@ class ResultsController(QtCore.QObject):
                     # Create its service radio button
                     self.view_results.create_service_stream_radio_button(key)
                 # Adding the movie to the matching lists
-                self.view_results.add_movie_to_service_layout(film_title, data[film_title]["Data"]["poster"], self.model.get_stream_services()[key]["layout"])
+                new_movie_button = self.view_results.add_movie_to_service_layout(data[film_title]["Data"]["jw_title"], data[film_title]["Data"]["poster"], data[film_title]["Data"]["stream_list"][key]["link"], self.model.get_stream_services()[key]["layout"])
+                self.new_movie_buttons.append(new_movie_button)
+                new_movie_button.clicked.connect(partial(self.movie_btn_link_url, data[film_title]["Data"]["stream_list"][key]["link"]))
         # Rent
         if data[film_title]["Data"]["rent"]:
             for key, value in data[film_title]["Data"]["rent_list"].items():
                 if key not in self.model.get_rent_services():
                     self.model.add_rent_service({key : "placeholderLayout"})
                     self.view_results.create_service_rent_radio_button(key)
+
+    def movie_btn_link_url(self, link):
+        """
+        Link the movie button to the url it was linked to in BDD
+        """
+        print(link)
+        webbrowser.open(link, new=0, autoraise=True)
 
 
     def update_ui_scan_finished(self, data):
