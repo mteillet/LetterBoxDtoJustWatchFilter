@@ -195,6 +195,9 @@ class MovieButton(QtWidgets.QPushButton):
         label_width = self.text_movie_label.fontMetrics().horizontalAdvance(movie_name) + 50
         if label_width < 180:
             label_width = 180
+        else:
+            self.text_movie_label.setText("%s..." % movie_name[:22])
+            label_width = 180
         self.setMinimumSize(label_width, 240)
         #self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
