@@ -66,6 +66,10 @@ class ResultsWindow(QtWidgets.QWidget):
         self.services_rent_scroll_area.setWidget(self.services_rent_scroll_layout_widget)
         self.all_movies_scroll_area.setWidget(self.films_services_layout_widget)
 
+        # Create a QButtonGroup for managing radio buttons (optional, for logical grouping)
+        self.radio_button_group = QtWidgets.QButtonGroup()
+        self.radio_button_group.setExclusive(False)
+
         # Bottom bar
         self.status_lbl = QtWidgets.QLabel("Scan in progress")
         self.percentage_lbl = QtWidgets.QLabel("{}%".format("50".zfill(2)))
@@ -121,14 +125,22 @@ class ResultsWindow(QtWidgets.QWidget):
         Create a radio button for a new service, and add it to the services_stream_scroll_layout
         """
         new_button = QtWidgets.QRadioButton(data)
+        new_button.setChecked(True)
+        self.radio_button_group.addButton(new_button)
         self.services_stream_scroll_layout.addWidget(new_button)
+
+        return "stream", new_button
 
     def create_service_rent_radio_button(self, data):
         """
         Create a radio button for a new service, and add it to the services_rent_scroll_layout
         """
         new_button = QtWidgets.QRadioButton(data)
+        new_button.setChecked(True)
+        self.radio_button_group.addButton(new_button)
         self.services_rent_scroll_layout.addWidget(new_button)
+
+        return "rent", new_button
 
     def create_service_movies_layout(self, data):
         """

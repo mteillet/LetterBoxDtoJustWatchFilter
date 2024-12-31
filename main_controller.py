@@ -476,7 +476,8 @@ class ResultsController(QtCore.QObject):
                     # Registers layout and key to bdd
                     self.model.add_stream_service({key : new_service_layout})
                     # Create its service radio button
-                    self.view_results.create_service_stream_radio_button(key)
+                    streamrent, button = self.view_results.create_service_stream_radio_button(key)
+                    button.clicked.connect(partial(self.radio_btn_clicked, streamrent, button))
                 # Adding the movie to the matching lists
                 new_movie_button = self.view_results.add_movie_to_service_layout(data[film_title]["Data"]["jw_title"], data[film_title]["Data"]["poster"], data[film_title]["Data"]["stream_list"][key]["link"], self.model.get_stream_services()[key]["layout"])
                 self.new_movie_buttons.append(new_movie_button)
@@ -486,7 +487,14 @@ class ResultsController(QtCore.QObject):
             for key, value in data[film_title]["Data"]["rent_list"].items():
                 if key not in self.model.get_rent_services():
                     self.model.add_rent_service({key : "placeholderLayout"})
-                    self.view_results.create_service_rent_radio_button(key)
+                    streamrent, button = self.view_results.create_service_rent_radio_button(key)
+
+    def radio_btn_clicked(self, streamrent, button):
+        """
+        Handles lists of films visibility for buttons clicked
+        """
+        print("Is stream or rent : %s" % streamrent)
+        print("For button : %s" % button.text())
 
     def movie_btn_link_url(self, link):
         """
@@ -495,13 +503,11 @@ class ResultsController(QtCore.QObject):
         print(link)
         webbrowser.open(link, new=0, autoraise=True)
 
-
     def update_ui_scan_finished(self, data):
         """
         Updating the UI when scan is over
         """
         self.view_results.status_lbl.setText("Finished scanning %s films" % str(data))
-
 
     def get_all_widgets(self, layout):
         """
