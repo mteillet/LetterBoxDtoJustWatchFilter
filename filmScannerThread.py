@@ -108,6 +108,7 @@ class MovieScannerThread(QtCore.QRunnable):
             service_result[service.find("picture", class_="picture-element").find("img")["title"]] = {}
             service_result[service.find("picture", class_="picture-element").find("img")["title"]]["img"] = service.find("picture", class_="picture-element").find("img")["src"]
             tracking_url = service["href"]
+            '''
             # Shortening the url as much as possible if possible for convenience
             start = tracking_url.find("r=")
             if start != -1:
@@ -116,6 +117,7 @@ class MovieScannerThread(QtCore.QRunnable):
                 encoded_url = tracking_url[start:end] if end != -1 else tracking_url[start:]
                 # Decode the URL manually by replacing percent-encoded characters
                 tracking_url = encoded_url.replace("%3A", ":").replace("%2F", "/")
+            '''
             service_result[service.find("picture", class_="picture-element").find("img")["title"]]["link"] = tracking_url
         return service_result
 
