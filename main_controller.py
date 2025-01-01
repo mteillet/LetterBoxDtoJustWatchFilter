@@ -493,8 +493,17 @@ class ResultsController(QtCore.QObject):
         """
         Handles lists of films visibility for buttons clicked
         """
-        print("Is stream or rent : %s" % streamrent)
-        print("For button : %s" % button.text())
+        print("Toggling results visibility to %s for %s %s" % (button.isChecked(), button.text(), streamrent))
+        if button.isChecked():
+            if streamrent == "stream":
+                film_layout = self.model.get_stream_services()[button.text()]
+            film_layout["scrollArea"].setVisible(True)
+            film_layout["label"].setVisible(True)
+        else:
+            if streamrent == "stream":
+                film_layout = self.model.get_stream_services()[button.text()]
+            film_layout["scrollArea"].setVisible(False)
+            film_layout["label"].setVisible(False)
 
     def movie_btn_link_url(self, link):
         """

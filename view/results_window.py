@@ -161,7 +161,7 @@ class ResultsWindow(QtWidgets.QWidget):
         self.films_services_layout.addWidget(service_label)
         self.films_services_layout.addWidget(service_movie_scroll_area)
 
-        return {"name" : data, "layout" : service_movie_scroll_layout, "label" : service_label}
+        return {"name" : data, "layout" : service_movie_scroll_layout, "label" : service_label, "scrollArea" : service_movie_scroll_area}
 
     def add_movie_to_service_layout(self, movie, poster, link, layout):
         """
