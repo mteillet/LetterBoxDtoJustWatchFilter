@@ -472,7 +472,7 @@ class ResultsController(QtCore.QObject):
             for key, value in data[film_title]["Data"]["stream_list"].items():
                 if key not in self.model.get_stream_services():
                     # Creating the layout for the movies linked to the service
-                    new_service_layout = self.view_results.create_service_movies_layout(key)
+                    new_service_layout = self.view_results.create_service_movies_layout(key, "Stream")
                     # Registers layout and key to bdd
                     self.model.add_stream_service({key : new_service_layout})
                     # Create its service radio button
@@ -486,22 +486,29 @@ class ResultsController(QtCore.QObject):
         if data[film_title]["Data"]["rent"]:
             for key, value in data[film_title]["Data"]["rent_list"].items():
                 if key not in self.model.get_rent_services():
-                    self.model.add_rent_service({key : "placeholderLayout"})
+                    new_service_layout = self.view_results.create_service_movies_layout(key, "Rent")
+                    self.model.add_rent_service({key : new_service_layout})
                     streamrent, button = self.view_results.create_service_rent_radio_button(key)
+                    button.clicked.connect(partial(self.radio_btn_clicked, streamrent, button))
+                new_movie_button = self.view_results.add_movie_to_service_layout(data[film_title]["Data"]["jw_title"], data[film_title]["Data"]["poster"], data[film_title]["Data"]["rent_list"][key]["link"], self.model.get_rent_services()[key]["layout"])
+                self.new_movie_buttons.append(new_movie_button)
+                new_movie_button.clicked.connect(partial(self.movie_btn_link_url, data[film_title]["Data"]["rent_list"][key]["link"]))
 
     def radio_btn_clicked(self, streamrent, button):
         """
         Handles lists of films visibility for buttons clicked
         """
         print("Toggling results visibility to %s for %s %s" % (button.isChecked(), button.text(), streamrent))
+
+        if streamrent == "stream":
+            film_layout = self.model.get_stream_services()[button.text()]
+        else:
+            film_layout = self.model.get_rent_services()[button.text()]
+
         if button.isChecked():
-            if streamrent == "stream":
-                film_layout = self.model.get_stream_services()[button.text()]
             film_layout["scrollArea"].setVisible(True)
             film_layout["label"].setVisible(True)
         else:
-            if streamrent == "stream":
-                film_layout = self.model.get_stream_services()[button.text()]
             film_layout["scrollArea"].setVisible(False)
             film_layout["label"].setVisible(False)
 

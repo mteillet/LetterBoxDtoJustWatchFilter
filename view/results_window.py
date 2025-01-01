@@ -142,7 +142,7 @@ class ResultsWindow(QtWidgets.QWidget):
 
         return "rent", new_button
 
-    def create_service_movies_layout(self, data):
+    def create_service_movies_layout(self, data, streamRent):
         """
         Creating necessary scroll area and layout to be able to add movies to it
         """
@@ -155,7 +155,7 @@ class ResultsWindow(QtWidgets.QWidget):
         service_movie_scroll_area.setWidget(service_movie_scroll_widget)
 
         # Setting up a label widget to show the service name for clarity
-        service_label = QtWidgets.QLabel(data)
+        service_label = QtWidgets.QLabel("%s - %s" % (data, streamRent))
 
         # Adding title of the service before the scrollbar
         self.films_services_layout.addWidget(service_label)
