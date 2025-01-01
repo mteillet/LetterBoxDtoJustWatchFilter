@@ -380,6 +380,21 @@ class MainController():
                 background: none;
             }
 
+
+            QScrollBar::handle:horizontal{
+                background: #333333;
+                min-height: 10px;
+                border-radius: 4px;
+            }
+
+            QScrollBar::handle:horizontal:hover {
+                background: #444444;
+            }
+
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal{
+                background: none;
+            }
+
             /* GroupBox */
             QGroupBox {
                 border: 1px solid #333333;

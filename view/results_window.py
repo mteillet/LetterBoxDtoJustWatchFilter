@@ -98,6 +98,7 @@ class ResultsWindow(QtWidgets.QWidget):
         # Splitter services and movies
         self.splitterV.addWidget(self.splitter_services)
         self.splitterV.addWidget(self.all_movies_scroll_area)
+        self.splitterV.setSizes([10,800])
         # Splitter Services only
         self.splitter_services.addWidget(self.services_stream_widget)
         self.splitter_services.addWidget(self.services_rent_widget)
@@ -148,7 +149,7 @@ class ResultsWindow(QtWidgets.QWidget):
         """
         service_movie_scroll_area = QtWidgets.QScrollArea()
         service_movie_scroll_area.setWidgetResizable(True)
-        service_movie_scroll_area.setMinimumHeight(270)
+        service_movie_scroll_area.setMinimumHeight(285)
         service_movie_scroll_widget = QtWidgets.QWidget()
         service_movie_scroll_layout = QtWidgets.QHBoxLayout(service_movie_scroll_widget)
         service_movie_scroll_widget.setLayout(service_movie_scroll_layout)
