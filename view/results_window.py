@@ -66,6 +66,18 @@ class ResultsWindow(QtWidgets.QWidget):
         self.services_rent_scroll_area.setWidget(self.services_rent_scroll_layout_widget)
         self.all_movies_scroll_area.setWidget(self.films_services_layout_widget)
 
+        # Filtering widgets
+        self.stream_btn = QtWidgets.QPushButton("Stream")
+        self.stream_btn.setCheckable(True)
+        self.stream_btn.setChecked(True)
+        self.rent_btn = QtWidgets.QPushButton("Rent")
+        self.rent_btn.setCheckable(True)
+        self.rent_btn.setChecked(True)
+        self.filter_text_edit = QtWidgets.QLineEdit("Filter Services")
+        self.filter_text_edit.setMaximumHeight(30)
+        self.filter_text_edit.setMaximumWidth(200)
+        self.filtering_layout_widget = QtWidgets.QWidget()
+
         # Create a QButtonGroup for managing radio buttons (optional, for logical grouping)
         self.radio_button_group = QtWidgets.QButtonGroup()
         self.radio_button_group.setExclusive(False)
@@ -97,7 +109,7 @@ class ResultsWindow(QtWidgets.QWidget):
         self.layout.addWidget(self.splitter)
         # Splitter services and movies
         self.splitterV.addWidget(self.splitter_services)
-        self.splitterV.addWidget(self.all_movies_scroll_area)
+        self.splitterV.addWidget(self.filtering_layout_widget)
         self.splitterV.setSizes([10,800])
         # Splitter Services only
         self.splitter_services.addWidget(self.services_stream_widget)
@@ -112,6 +124,16 @@ class ResultsWindow(QtWidgets.QWidget):
         self.services_rent_lay.addWidget(QtWidgets.QLabel("Renting Services:"))
         self.services_rent_lay.addWidget(self.services_rent_scroll_area)
 
+        # Layout for movie filtering
+        self.filtering_layout = QtWidgets.QHBoxLayout()
+        self.filtering_layout.addStretch()
+        self.filtering_layout.addWidget(self.filter_text_edit)
+        self.filtering_layout.addWidget(self.stream_btn)
+        self.filtering_layout.addWidget(self.rent_btn)
+        self.filter_films_layout = QtWidgets.QVBoxLayout(self.filtering_layout_widget)
+        self.filter_films_layout.addLayout(self.filtering_layout)
+        self.filter_films_layout.addWidget(QHLine())
+        self.filter_films_layout.addWidget(self.all_movies_scroll_area)
         # Layout for movies
         self.films_services_layout = QtWidgets.QVBoxLayout(self.films_services_layout_widget)
 

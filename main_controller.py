@@ -448,6 +448,33 @@ class ResultsController(QtCore.QObject):
         self.view_results.resize(1280, 720)
         self.main_controller.applyStyleSheet(self.view_results)
         self.style_labels(self.get_all_widgets(self.view_results.bottom_bar_layout))
+        self.link_signals()
+
+    def link_signals(self):
+        """
+        Linking the signals that are always in the UI to logic here
+        """
+        self.view_results.filter_text_edit.returnPressed.connect(self.filter_movies_enter_pressed)
+        self.view_results.stream_btn.clicked.connect(self.filter_stream_btn_pressed)
+        self.view_results.rent_btn.clicked.connect(self.filter_rent_btn_pressed)
+
+    def filter_movies_enter_pressed(self):
+        """
+        Filtering services movie display based on the QLineEdit text
+        """
+        print(self.view_results.filter_text_edit.text())
+
+    def filter_stream_btn_pressed(self):
+        """
+        Filtering stream serices, based on the button checked state or not
+        """
+        print("Stream fitlering : %s" % self.view_results.stream_btn.isChecked())
+
+    def filter_rent_btn_pressed(self):
+        """
+        Filtering rent serices, based on the button checked state or not
+        """
+        print("Rent fitlering : %s" % self.view_results.rent_btn.isChecked())
 
     def update_ui_scan(self, data):
         """
