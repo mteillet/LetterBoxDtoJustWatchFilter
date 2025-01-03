@@ -462,19 +462,88 @@ class ResultsController(QtCore.QObject):
         """
         Filtering services movie display based on the QLineEdit text
         """
-        print(self.view_results.filter_text_edit.text())
+        self.filtering_logic(self.view_results.filter_text_edit.text(), self.view_results.stream_btn.isChecked(), self.view_results.rent_btn.isChecked())
 
     def filter_stream_btn_pressed(self):
         """
         Filtering stream serices, based on the button checked state or not
         """
         print("Stream fitlering : %s" % self.view_results.stream_btn.isChecked())
+        self.btn_checking_stylesheet(self.view_results.stream_btn, self.view_results.stream_btn.isChecked())
+        self.filtering_logic(self.view_results.filter_text_edit.text(), self.view_results.stream_btn.isChecked(), self.view_results.rent_btn.isChecked())
 
     def filter_rent_btn_pressed(self):
         """
         Filtering rent serices, based on the button checked state or not
         """
         print("Rent fitlering : %s" % self.view_results.rent_btn.isChecked())
+        self.btn_checking_stylesheet(self.view_results.rent_btn, self.view_results.rent_btn.isChecked())
+        self.filtering_logic(self.view_results.filter_text_edit.text(), self.view_results.stream_btn.isChecked(), self.view_results.rent_btn.isChecked())
+
+    def filtering_logic(self, filter_string, stream_btn, rent_btn):
+        """
+        Fitlering the movie lists widgets visibility based on:
+            - The QLineEdit if it isn't empty or "Filter Services"
+            - The stream checkable btn
+            - The rent checkable btn
+            - The Radio btns states
+        """
+        stream_services_dict = self.model.get_stream_services()
+        rent_services_dict = self.model.get_rent_services()
+        radio_btns_dict = self.model.get_stream_rent_btns()
+
+        # Need to write logic for the filter string
+
+        if stream_btn:
+            for key, values in stream_services_dict.items():
+                if radio_btns_dict["stream"][key].isChecked():
+                    values["scrollArea"].setVisible(True)
+                    values["label"].setVisible(True)
+        else:
+            for key, values in stream_services_dict.items():
+                values["scrollArea"].setVisible(False)
+                values["label"].setVisible(False)
+
+        if rent_btn :
+            for key, values in rent_services_dict.items():
+                if radio_btns_dict["rent"][key].isChecked():
+                    values["scrollArea"].setVisible(True)
+                    values["label"].setVisible(True)
+        else:
+            for key, values in rent_services_dict.items():
+                values["scrollArea"].setVisible(False)
+                values["label"].setVisible(False)
+        
+
+    def btn_checking_stylesheet(self, widget, status):
+        """
+        If the btn status is true, set default stylesheet
+        Else, set a stylesheet with red instead of green
+        """
+        unchecked_stylesheet = """
+            /* Buttons */
+            QPushButton {
+                background-color: #333333;
+                color: #FF4D4D; /* Red text for better contrast */
+                padding: 6px 12px;
+                border: 1px solid #FF4D4D;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+
+            QPushButton:hover {
+                background-color: #444444;
+                border: 1px solid #FF4D4D;
+            }
+
+            QPushButton:pressed {
+                background-color: #555555; /* Neutral gray for pressed state */
+            }
+        """
+        if status:
+            self.main_controller.applyStyleSheet(widget)
+        else:
+            widget.setStyleSheet(unchecked_stylesheet)
 
     def update_ui_scan(self, data):
         """
@@ -519,6 +588,7 @@ class ResultsController(QtCore.QObject):
                     self.model.add_stream_service({key : new_service_layout})
                     # Create its service radio button
                     streamrent, button = self.view_results.create_service_stream_radio_button(key)
+                    self.model.add_stream_btn({key : button})
                     button.clicked.connect(partial(self.radio_btn_clicked, streamrent, button))
                 # Adding the movie to the matching lists
                 new_movie_button = self.view_results.add_movie_to_service_layout(data[film_title]["Data"]["jw_title"], data[film_title]["Data"]["poster"], data[film_title]["Data"]["stream_list"][key]["link"], self.model.get_stream_services()[key]["layout"])
@@ -531,6 +601,7 @@ class ResultsController(QtCore.QObject):
                     new_service_layout = self.view_results.create_service_movies_layout(key, "Rent")
                     self.model.add_rent_service({key : new_service_layout})
                     streamrent, button = self.view_results.create_service_rent_radio_button(key)
+                    self.model.add_rent_btn({key : button})
                     button.clicked.connect(partial(self.radio_btn_clicked, streamrent, button))
                 new_movie_button = self.view_results.add_movie_to_service_layout(data[film_title]["Data"]["jw_title"], data[film_title]["Data"]["poster"], data[film_title]["Data"]["rent_list"][key]["link"], self.model.get_rent_services()[key]["layout"])
                 self.new_movie_buttons.append(new_movie_button)

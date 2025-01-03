@@ -17,6 +17,7 @@ class Init_model():
         #self.generic_lists["Science-Fiction"] = "https://letterboxd.com/search/lists/SF+Movies/"
         #self.generic_lists["True Story"] = "https://letterboxd.com/search/lists/True+Story+Movies/"
         #self.generic_lists["Musical"] = "https://letterboxd.com/search/lists/musicals/"
+
         self.popular_link = "https://letterboxd.com/lists/popular/this/week/"
         self.generic_lists_dict = {}
         # List Scanning
@@ -31,6 +32,19 @@ class Init_model():
         # UI data
         self.stream_services = {}
         self.rent_services = {}
+        self.stream_rent_btns = {
+            "stream" : {},
+            "rent" : {},
+        }
+
+    def add_stream_btn(self, data):
+        self.stream_rent_btns["stream"].update(data)
+
+    def add_rent_btn(self, data):
+        self.stream_rent_btns["rent"].update(data)
+    
+    def get_stream_rent_btns(self):
+        return self.stream_rent_btns
 
     def add_rent_service(self, data):
         self.rent_services.update(data)
