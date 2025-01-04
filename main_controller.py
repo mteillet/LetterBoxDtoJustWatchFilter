@@ -58,6 +58,13 @@ class MainController():
         Connecting signals between the model and view
         """
         self.view.popular_list_signal.connect(self.list_clicked)
+        self.view.customList_btn.clicked.connect(self.custom_list_btn_clicked)
+
+    def custom_list_btn_clicked(self):
+        """
+        Handling custom list btn clicked signal
+        """
+        print("Clicked custom list btn")
 
     def fetch_gui_country(self):
         """
