@@ -462,6 +462,7 @@ class ResultsController(QtCore.QObject):
         """
         Filtering services movie display based on the QLineEdit text
         """
+        self.main_controller.log_message("Filtering : %s" % self.view_results.filter_text_edit.text())
         self.filtering_logic(self.view_results.filter_text_edit.text(), self.view_results.stream_btn.isChecked(), self.view_results.rent_btn.isChecked())
 
     def filter_stream_btn_pressed(self):
@@ -491,14 +492,25 @@ class ResultsController(QtCore.QObject):
         stream_services_dict = self.model.get_stream_services()
         rent_services_dict = self.model.get_rent_services()
         radio_btns_dict = self.model.get_stream_rent_btns()
+        need_filter_text = False
 
-        # Need to write logic for the filter string
+        if self.view_results.filter_text_edit.text() != "Filter Services" and self.view_results.filter_text_edit.text() != "":
+            # print("Need filtering, since filter text is : \n%s" % self.view_results.filter_text_edit.text())
+            need_filter_text = True
 
         if stream_btn:
             for key, values in stream_services_dict.items():
                 if radio_btns_dict["stream"][key].isChecked():
-                    values["scrollArea"].setVisible(True)
-                    values["label"].setVisible(True)
+                    if need_filter_text:
+                        if self.view_results.filter_text_edit.text().lower() in values["label"].text().lower():
+                            values["scrollArea"].setVisible(True)
+                            values["label"].setVisible(True)
+                        else:
+                            values["scrollArea"].setVisible(False)
+                            values["label"].setVisible(False)
+                    else:
+                        values["scrollArea"].setVisible(True)
+                        values["label"].setVisible(True)
         else:
             for key, values in stream_services_dict.items():
                 values["scrollArea"].setVisible(False)
@@ -507,8 +519,16 @@ class ResultsController(QtCore.QObject):
         if rent_btn :
             for key, values in rent_services_dict.items():
                 if radio_btns_dict["rent"][key].isChecked():
-                    values["scrollArea"].setVisible(True)
-                    values["label"].setVisible(True)
+                    if need_filter_text:
+                        if self.view_results.filter_text_edit.text().lower() in values["label"].text().lower():
+                            values["scrollArea"].setVisible(True)
+                            values["label"].setVisible(True)
+                        else:
+                            values["scrollArea"].setVisible(False)
+                            values["label"].setVisible(False)
+                    else:
+                        values["scrollArea"].setVisible(True)
+                        values["label"].setVisible(True)
         else:
             for key, values in rent_services_dict.items():
                 values["scrollArea"].setVisible(False)
