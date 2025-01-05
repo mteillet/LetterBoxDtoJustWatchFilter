@@ -12,6 +12,7 @@ from PySide2 import QtWidgets, QtCore
 from playwright.sync_api import sync_playwright
 
 from view.results_window import ResultsWindow
+from view.custom_list_popup import Custom_List_Popup
 from filmScannerThread import MovieScannerThread
 
 class MainController():
@@ -64,7 +65,41 @@ class MainController():
         """
         Handling custom list btn clicked signal
         """
-        print("Clicked custom list btn")
+        self.popup_view = Custom_List_Popup()
+        self.applyStyleSheet(self.popup_view)
+        self.popup_view.show()
+        self.popup_link_signals()
+
+    def popup_link_signals(self):
+        """
+        Linking popup view ( Custom_List_Popup ) signals to the controller
+        """
+        self.popup_view.ok_btn.clicked.connect(self.custom_list_ok_btn_clicked)
+        self.popup_view.link_line_edit.returnPressed.connect(self.custom_list_ok_btn_clicked)
+
+    def custom_list_ok_btn_clicked(self):
+        """
+        Checking the validity of the custom list, and feeding it to the scanner if it is
+        """        
+        custom_list_link = self.popup_view.link_line_edit.text()
+        if self.is_valid_url(custom_list_link):
+            self.popup_view.text_label.setText("URL : %s is Ok" % custom_list_link)
+            self.popup_view.close()
+            #self.model.set_film_list(custom_list_link)
+            self.list_clicked(custom_list_link)
+        else:
+            self.popup_view.text_label.setText("%s is not a valid URL, try another one please" % custom_list_link)
+
+        
+    def is_valid_url(self, url):
+        """
+        Check if an url can be reached
+        """
+        try:
+            response = requests.head(url, allow_redirects=True, timeout=5)
+            return response.status_code == 200  # URL is reachable and responds with OK
+        except requests.RequestException:
+            return False
 
     def fetch_gui_country(self):
         """
