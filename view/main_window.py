@@ -2,6 +2,41 @@
 
 from PySide2 import QtWidgets, QtCore, QtGui
 
+class Loading_Screen(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        # Set up the widget size and position
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+        self.setGeometry(100, 100, 700, 400)
+
+        # Create a QLabel for the loading message
+        self.label = QtWidgets.QLabel("Loading... Please wait.", self)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setStyleSheet("color: white; font-size: 18px;")
+        self.label.resize(400, 200)
+        self.label.move(400, 500)
+
+        # Show the loading screen
+        self.show()
+
+        # Ensure that the UI updates before transitioning to the main window
+        QtWidgets.QApplication.processEvents()
+
+    def paintEvent(self, event):
+        # This method is called when the widget needs to be repainted
+        painter = QtGui.QPainter(self)
+        # Load the background image
+        pixmap = QtGui.QPixmap('imgs/splashscreen/splashscreen_placeholder_tmp.jpg')
+
+        # Scale the pixmap to fit the widget size
+        pixmap = pixmap.scaled(self.size(), QtCore.Qt.KeepAspectRatioByExpanding)
+
+        # Draw the pixmap (background image)
+        painter.drawPixmap(0, 0, pixmap)
+
+        # Optional: Draw additional items (e.g., loading text) on top of the image
+        super().paintEvent(event)
+
 class Main_Window(QtWidgets.QWidget):
     finished_homepageBuild = QtCore.Signal(str)
     popular_list_signal = QtCore.Signal(str)
