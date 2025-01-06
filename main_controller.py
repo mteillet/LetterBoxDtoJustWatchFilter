@@ -14,6 +14,7 @@ from playwright.sync_api import sync_playwright
 from view.results_window import ResultsWindow
 from view.custom_list_popup import Custom_List_Popup
 from filmScannerThread import MovieScannerThread
+from getBaseListsThread import GenericListsScannerThread
 
 class MainController():
     def __init__(self, model, view):
@@ -265,15 +266,31 @@ class MainController():
         Feeding the list urls to the parser function, and building the needed
         Dict from it
         """
-        generic_list_dict = {}
+        self.active_list_workers = []
         for key, url in generic_list.items():
             print("Scraping : %s at %s ..." % (key, url))
-            title, results = self.scrape_generic_list(url)
-            generic_list_dict[key] = results
-            generic_list_dict[key]["title"] = title
-            print("Scraping : %s OK" % key)
+            workerList = GenericListsScannerThread(key, url)
+            workerList.signals.result.connect(self.workerList_result, QtCore.Qt.QueuedConnection)
+            self.active_list_workers.append(workerList)
+            self.pool.start(workerList)
 
-        return generic_list_dict
+            #title, results = self.scrape_generic_list(url)
+            #generic_list_dict[key] = results
+            #generic_list_dict[key]["title"] = title
+            #print("Scraping : %s OK" % key)
+
+        #return generic_list_dict
+
+    @QtCore.Slot(tuple)
+    def workerList_result(self, result):
+        """
+        Adding the result from the worker thread to the bdd
+        """
+        key, list_scan_result = result
+        print("Scraping : %s OK" % key)
+        generic_list_dict = {}
+        generic_list_dict[key] = list_scan_result
+        generic_list_dict[key]["title"] = key
 
     def scrape_generic_list(self, url):
         """
