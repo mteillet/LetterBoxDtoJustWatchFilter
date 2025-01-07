@@ -16,11 +16,6 @@ class Loading_Screen(QtWidgets.QWidget):
         self.label.resize(400, 200)
         self.label.move(400, 500)
 
-        # Show the loading screen
-        self.show()
-
-        # Ensure that the UI updates before transitioning to the main window
-        QtWidgets.QApplication.processEvents()
 
     def paintEvent(self, event):
         # This method is called when the widget needs to be repainted

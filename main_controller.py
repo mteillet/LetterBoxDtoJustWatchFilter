@@ -16,6 +16,58 @@ from view.custom_list_popup import Custom_List_Popup
 from filmScannerThread import MovieScannerThread
 from getBaseListsThread import GenericListsScannerThread
 
+class LoadingController():
+    def __init__(self, model, view):
+        """
+        Initializing the controller for the splashscreen with references to the model and view
+        """
+        self.model = model
+        self.splash_view = view
+        self.splash_pool = QtCore.QThreadPool()
+        self.splash_pool.setMaxThreadCount(2)
+
+        self.get_generic_list()
+
+    def get_generic_list(self):
+        """
+        Getting generic lists data from bdd and building the homepage accordingly
+        """
+        generic_list = self.model.get_generic_list()
+        generic_list_dict = self.build_generic_lists(generic_list)
+        #self.model.set_generic_lists_dict(generic_list_dict)
+        #self.view.build_homepage(self.model.get_generic_lists_dict())
+
+    def build_generic_lists(self, generic_list):
+        """
+        Feeding the list urls to the parser function, and building the needed
+        Dict from it
+        """
+        self.active_list_workers = []
+        for key, url in generic_list.items():
+            #print("Scraping : %s at %s ..." % (key, url))
+            worker = GenericListsScannerThread(key, url)
+            self.active_list_workers.append(worker)
+            worker.signals.result.connect(lambda res: print("Signal received in lambda:", res))
+            worker.signals.result.connect(self.workerList_result)
+            self.splash_pool.start(worker)
+
+    #@QtCore.Slot(str)
+    @QtCore.Slot(tuple)
+    def workerList_result(self, result):
+        """
+        Adding the result from the worker thread to the bdd
+        """
+        print(result)
+        print("OOOOKKKKK")
+        #key, list_scan_result = result
+        list_scan_result = result
+        print("Scraping : %s OK" % list_scan_result)
+        generic_list_dict = {}
+        #generic_list_dict[key] = list_scan_result
+        #generic_list_dict[key]["title"] = key
+
+
+
 class MainController():
     def __init__(self, model, view):
         """
@@ -269,17 +321,19 @@ class MainController():
         self.active_list_workers = []
         for key, url in generic_list.items():
             print("Scraping : %s at %s ..." % (key, url))
-            workerList = GenericListsScannerThread(key, url)
-            workerList.signals.result.connect(self.workerList_result, QtCore.Qt.QueuedConnection)
-            self.active_list_workers.append(workerList)
-            self.pool.start(workerList)
+            # TODO
+            #workerList = GenericListsScannerThread(key, url)
+            #workerList.signals.result.connect(self.workerList_result, QtCore.Qt.QueuedConnection)
+            #self.active_list_workers.append(workerList)
+            #self.pool.start(workerList)
 
-            #title, results = self.scrape_generic_list(url)
-            #generic_list_dict[key] = results
-            #generic_list_dict[key]["title"] = title
-            #print("Scraping : %s OK" % key)
+            
+            title, results = self.scrape_generic_list(url)
+            generic_list_dict[key] = results
+            generic_list_dict[key]["title"] = title
+            print("Scraping : %s OK" % key)
 
-        #return generic_list_dict
+        return generic_list_dict
 
     @QtCore.Slot(tuple)
     def workerList_result(self, result):

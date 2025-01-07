@@ -13,6 +13,7 @@ class ListsWorkerSignals(QtCore.QObject):
     """
     Signals for worker threads
     """
+    #result = QtCore.Signal(str)
     result = QtCore.Signal(tuple)
 
 
@@ -30,7 +31,9 @@ class GenericListsScannerThread(QtCore.QRunnable):
         """
         Getting the list and posters of a list
         """
+        print("Running thread for %s, list : %s" % (self.key, self.list_link))
         white_poster = True
+        '''
         while white_poster:
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True) 
@@ -50,7 +53,13 @@ class GenericListsScannerThread(QtCore.QRunnable):
                     break
                 else:
                     white_poster = False
-        self.signals.result.emit((title, {"posters" : list(reversed(posters)), "link" : href}))
+        '''
+        print("Thread done for %s, list : %s" % (self.key, self.list_link))
+        #self.signals.result.emit("result")
+        #QtCore.QThread.msleep(10)
+        #self.signals.result.emit((title, {"posters" : list(reversed(posters)), "link" : href}))
+        self.signals.result.emit((self.key, {"posters" : "posteData"}))
+        print("After emission print")
 
     def check_blank_image(self, image):
         """
