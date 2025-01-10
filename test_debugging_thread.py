@@ -12,7 +12,7 @@ class TestWorker(QRunnable):
 
     def run(self):
         print(f"Running in thread: {QThread.currentThread()}")
-        time.sleep(1)  # Simulate a long-running task
+        time.sleep(4)  # Simulate a long-running task
         self.signals.result.emit("Task Complete")
 
 class MainWindow(QWidget):
@@ -31,7 +31,7 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
     def start_task(self):
-        for i in range(5):
+        for i in range(25):
             worker = TestWorker()
             worker.signals.result.connect(self.task_complete)
             self.threadpool.start(worker)
