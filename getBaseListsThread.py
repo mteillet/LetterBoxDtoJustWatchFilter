@@ -1,5 +1,6 @@
 # getBaseListsThread.py
 import io
+from time import sleep
 
 import requests
 import webbrowser
@@ -14,13 +15,11 @@ class ListsWorkerSignals(QtCore.QObject):
     Signals for worker threads
     """
     #result = QtCore.Signal(str)
-    result = QtCore.Signal(tuple)
+    result = QtCore.Signal(str, dict)
+    error = QtCore.Signal(str)
 
 
 class GenericListsScannerThread(QtCore.QRunnable):
-    """
-    Thread class scanning letterboxD for each list
-    """
     def __init__(self, key, list_link):
         super().__init__()
         self.key = key
@@ -28,15 +27,19 @@ class GenericListsScannerThread(QtCore.QRunnable):
         self.signals = ListsWorkerSignals()
 
     def run(self):
+        # print(f"Running thread for {self.key} in thread: {QtCore.QThread.currentThread()}")
+        sleep(5)
+        self.signals.result.emit("test", {"title": "test", "link": "test", "posters": "test"})
+
+    def scrape_data(self):
         """
-        Getting the list and posters of a list
+        Perform web scraping for the list data.
         """
-        print("Running thread for %s, list : %s" % (self.key, self.list_link))
         white_poster = True
         '''
         while white_poster:
             with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True) 
+                browser = p.chromium.launch(headless=True)
                 page = browser.new_page()
                 page.goto(self.list_link)
                 page.wait_for_selector("ul.poster-list img", state="visible")
@@ -46,24 +49,22 @@ class GenericListsScannerThread(QtCore.QRunnable):
             title = soup.select_one(".list.-overlapped.-summary h2 a").get_text()
             href = soup.select_one(".list.-overlapped.-summary a.list-link")["href"]
             posters = [requests.get(poster.select_one("img")["src"]).content for poster in soup.select("ul.poster-list li.film-poster")[:5]]
+
             for image in posters:
                 if self.check_blank_image(Image.open(io.BytesIO(image))):
-                    print("Placeholder image detected for posters of %s --> Requeue" % title)
+                    print(f"Placeholder image detected for {title}. Retrying...")
                     white_poster = True
                     break
                 else:
                     white_poster = False
+
+        return title, href, list(reversed(posters))
         '''
-        print("Thread done for %s, list : %s" % (self.key, self.list_link))
-        #self.signals.result.emit("result")
-        #QtCore.QThread.msleep(10)
-        #self.signals.result.emit((title, {"posters" : list(reversed(posters)), "link" : href}))
-        self.signals.result.emit((self.key, {"posters" : "posteData"}))
-        print("After emission print")
+        return "test", "test", list("test")
 
     def check_blank_image(self, image):
         """
-        Check if an image is blank
+        Check if an image is blank.
         """
         grayscale_image = image.convert("L")
         extrema = grayscale_image.getextrema()

@@ -3,10 +3,12 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 
 class Loading_Screen(QtWidgets.QWidget):
+    initialized = QtCore.Signal()  # Signal to notify initialization
+
     def __init__(self):
         super().__init__()
         # Set up the widget size and position
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+        #self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         self.setGeometry(100, 100, 700, 400)
 
         # Create a QLabel for the loading message
@@ -15,7 +17,6 @@ class Loading_Screen(QtWidgets.QWidget):
         self.label.setStyleSheet("color: white; font-size: 18px;")
         self.label.resize(400, 200)
         self.label.move(400, 500)
-
 
     def paintEvent(self, event):
         # This method is called when the widget needs to be repainted
@@ -31,6 +32,12 @@ class Loading_Screen(QtWidgets.QWidget):
 
         # Optional: Draw additional items (e.g., loading text) on top of the image
         super().paintEvent(event)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        # QtCore.QTimer.singleShot(0, self.initialized.emit)
+        self.initialized.emit()
+
 
 class Main_Window(QtWidgets.QWidget):
     finished_homepageBuild = QtCore.Signal(str)

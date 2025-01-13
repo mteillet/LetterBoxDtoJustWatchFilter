@@ -6,19 +6,20 @@ class Init_model():
         self.popular_list_dict = {}
         self.generic_lists = {}
         self.generic_lists["Romance"] = "https://letterboxd.com/search/lists/Love+Movies/"
-        #self.generic_lists["Horror"] = "https://letterboxd.com/search/lists/Horror/"
-        #self.generic_lists["Action"] = "https://letterboxd.com/search/lists/Action+Movies/"
-        #self.generic_lists["Comedy"] = "https://letterboxd.com/search/lists/Comedy+Movies/"
-        #self.generic_lists["Drama"] = "https://letterboxd.com/search/lists/Drama+Movies/"
-        #self.generic_lists["Thriller"] = "https://letterboxd.com/search/lists/Thriller+Movies/"
-        #self.generic_lists["Mystery"] = "https://letterboxd.com/search/lists/mistery/"
-        #self.generic_lists["Animated"] = "https://letterboxd.com/search/lists/Animated+Movies/"
-        #self.generic_lists["Documentaries"] = "https://letterboxd.com/search/lists/Documentaries/"
-        #self.generic_lists["Science-Fiction"] = "https://letterboxd.com/search/lists/SF+Movies/"
-        #self.generic_lists["True Story"] = "https://letterboxd.com/search/lists/True+Story+Movies/"
-        #self.generic_lists["Musical"] = "https://letterboxd.com/search/lists/musicals/"
+        self.generic_lists["Horror"] = "https://letterboxd.com/search/lists/Horror/"
+        self.generic_lists["Action"] = "https://letterboxd.com/search/lists/Action+Movies/"
+        self.generic_lists["Comedy"] = "https://letterboxd.com/search/lists/Comedy+Movies/"
+        self.generic_lists["Drama"] = "https://letterboxd.com/search/lists/Drama+Movies/"
+        self.generic_lists["Thriller"] = "https://letterboxd.com/search/lists/Thriller+Movies/"
+        self.generic_lists["Mystery"] = "https://letterboxd.com/search/lists/mistery/"
+        self.generic_lists["Animated"] = "https://letterboxd.com/search/lists/Animated+Movies/"
+        self.generic_lists["Documentaries"] = "https://letterboxd.com/search/lists/Documentaries/"
+        self.generic_lists["Science-Fiction"] = "https://letterboxd.com/search/lists/SF+Movies/"
+        self.generic_lists["True Story"] = "https://letterboxd.com/search/lists/True+Story+Movies/"
+        self.generic_lists["Musical"] = "https://letterboxd.com/search/lists/musicals/"
 
         self.popular_link = "https://letterboxd.com/lists/popular/this/week/"
+
         self.generic_lists_dict = {}
         # List Scanning
         self.list_scan_url = ""

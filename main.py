@@ -10,9 +10,7 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     splashcreen = Loading_Screen()
-    splashcreen.show()
     initModel = Init_model()
-
     LoadingController(initModel, splashcreen)
 
     #initView = Main_Window()

@@ -6,6 +6,7 @@ from functools import partial
 import io
 import requests
 import webbrowser
+from PySide2 import QtCore
 from PIL import Image
 from bs4 import BeautifulSoup
 from PySide2 import QtWidgets, QtCore
@@ -16,56 +17,50 @@ from view.custom_list_popup import Custom_List_Popup
 from filmScannerThread import MovieScannerThread
 from getBaseListsThread import GenericListsScannerThread
 
-class LoadingController():
+class LoadingController(QtCore.QObject):  # Inherit QObject to handle signals/slots
     def __init__(self, model, view):
-        """
-        Initializing the controller for the splashscreen with references to the model and view
-        """
+        super().__init__()
+        print("LoadingController initialized")
         self.model = model
         self.splash_view = view
+        self.splash_view.show()
+
+        # Use a thread pool for workers
         self.splash_pool = QtCore.QThreadPool()
         self.splash_pool.setMaxThreadCount(2)
 
-        self.get_generic_list()
+        # Connect the splash screen's initialized signal
+        self.splash_view.initialized.connect(self.get_generic_list)
 
     def get_generic_list(self):
         """
-        Getting generic lists data from bdd and building the homepage accordingly
+        Getting generic lists data from the database and building the homepage.
         """
         generic_list = self.model.get_generic_list()
-        generic_list_dict = self.build_generic_lists(generic_list)
-        #self.model.set_generic_lists_dict(generic_list_dict)
-        #self.view.build_homepage(self.model.get_generic_lists_dict())
+        self.build_generic_lists(generic_list)
 
     def build_generic_lists(self, generic_list):
         """
-        Feeding the list urls to the parser function, and building the needed
-        Dict from it
+        Creating worker threads to fetch data for each list.
         """
         self.active_list_workers = []
         for key, url in generic_list.items():
-            #print("Scraping : %s at %s ..." % (key, url))
+            print(f"Starting worker for {key} at {url}")
             worker = GenericListsScannerThread(key, url)
-            self.active_list_workers.append(worker)
-            worker.signals.result.connect(lambda res: print("Signal received in lambda:", res))
+
+            # Connect signals to slot
             worker.signals.result.connect(self.workerList_result)
+
+            self.active_list_workers.append(worker)
             self.splash_pool.start(worker)
 
-    #@QtCore.Slot(str)
-    @QtCore.Slot(tuple)
+    @QtCore.Slot(str, dict)
     def workerList_result(self, result):
         """
-        Adding the result from the worker thread to the bdd
+        Handle results from the worker thread.
         """
-        print(result)
-        print("OOOOKKKKK")
-        #key, list_scan_result = result
-        list_scan_result = result
-        print("Scraping : %s OK" % list_scan_result)
-        generic_list_dict = {}
-        #generic_list_dict[key] = list_scan_result
-        #generic_list_dict[key]["title"] = key
-
+        key, data = result
+        print(f"Result received for {key}: {data}")
 
 
 class MainController():
