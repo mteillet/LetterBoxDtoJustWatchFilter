@@ -9,33 +9,31 @@ class Loading_Screen(QtWidgets.QWidget):
         super().__init__()
         # Set up the widget size and position
         #self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
-        self.setGeometry(100, 100, 700, 400)
+        dimensions = [1280, 720]
+        window_offset = [160, 90]
+        self.setGeometry(window_offset[0], window_offset[1], window_offset[0] + dimensions[0], window_offset[1] + dimensions[1])
 
         # Create a QLabel for the loading message
         self.label = QtWidgets.QLabel("Loading... Please wait.", self)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setStyleSheet("color: white; font-size: 18px;")
-        self.label.resize(400, 200)
-        self.label.move(400, 500)
+        self.label.resize(dimensions[0] + window_offset[0], dimensions[1] + window_offset[1])
+        #self.label.move(400, 500)
 
-    def paintEvent(self, event):
-        # This method is called when the widget needs to be repainted
-        painter = QtGui.QPainter(self)
-        # Load the background image
-        pixmap = QtGui.QPixmap('imgs/splashscreen/splashscreen_placeholder_tmp.jpg')
-
-        # Scale the pixmap to fit the widget size
-        pixmap = pixmap.scaled(self.size(), QtCore.Qt.KeepAspectRatioByExpanding)
-
-        # Draw the pixmap (background image)
-        painter.drawPixmap(0, 0, pixmap)
-
-        # Optional: Draw additional items (e.g., loading text) on top of the image
-        super().paintEvent(event)
+        # Set the background image using a stylesheet
+        self.setStyleSheet("""
+            QWidget {
+                background-image: url('imgs/splashscreen/splashscreen_placeholder_tmp.jpg');
+            }
+        """)
 
     def showEvent(self, event):
         super().showEvent(event)
-        # QtCore.QTimer.singleShot(0, self.initialized.emit)
+        # Delay the signal emission to ensure UI is fully initialized
+        QtCore.QTimer.singleShot(0, self.emit_initialized_signal)
+
+    def emit_initialized_signal(self):
+        print("Signal sent")
         self.initialized.emit()
 
 

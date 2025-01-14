@@ -17,25 +17,28 @@ from view.custom_list_popup import Custom_List_Popup
 from filmScannerThread import MovieScannerThread
 from getBaseListsThread import GenericListsScannerThread
 
-class LoadingController(QtCore.QObject):  # Inherit QObject to handle signals/slots
+
+class LoadingController(QtCore.QObject):
     def __init__(self, model, view):
         super().__init__()
-        print("LoadingController initialized")
         self.model = model
         self.splash_view = view
+        self.connect_splashscreen_signals()
         self.splash_view.show()
 
-        # Use a thread pool for workers
-        self.splash_pool = QtCore.QThreadPool()
-        self.splash_pool.setMaxThreadCount(2)
-
-        # Connect the splash screen's initialized signal
+    def connect_splashscreen_signals(self):
+        """
+        Connect the splash screen's initialized signal
+        """
+        # print("Connecting splashscreen signals")
         self.splash_view.initialized.connect(self.get_generic_list)
+        # print("Signal connected")
 
     def get_generic_list(self):
         """
         Getting generic lists data from the database and building the homepage.
         """
+        print("Get generic list called")
         generic_list = self.model.get_generic_list()
         self.build_generic_lists(generic_list)
 
@@ -46,13 +49,8 @@ class LoadingController(QtCore.QObject):  # Inherit QObject to handle signals/sl
         self.active_list_workers = []
         for key, url in generic_list.items():
             print(f"Starting worker for {key} at {url}")
-            worker = GenericListsScannerThread(key, url)
-
-            # Connect signals to slot
-            worker.signals.result.connect(self.workerList_result)
-
-            self.active_list_workers.append(worker)
-            self.splash_pool.start(worker)
+            # Implement thread workers as needed
+        print("Finished")
 
     @QtCore.Slot(str, dict)
     def workerList_result(self, result):

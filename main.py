@@ -11,7 +11,7 @@ def main():
 
     splashcreen = Loading_Screen()
     initModel = Init_model()
-    LoadingController(initModel, splashcreen)
+    loadingController = LoadingController(initModel, splashcreen)
 
     #initView = Main_Window()
 
