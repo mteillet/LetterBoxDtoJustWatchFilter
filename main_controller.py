@@ -46,19 +46,27 @@ class LoadingController(QtCore.QObject):
         """
         Creating worker threads to fetch data for each list.
         """
+        self.list_pool = QtCore.QThreadPool()
+        self.list_pool.setMaxThreadCount(4)
+
         self.active_list_workers = []
         for key, url in generic_list.items():
             print(f"Starting worker for {key} at {url}")
-            # Implement thread workers as needed
+            self.list_worker = GenericListsScannerThread(key, url)
+            self.list_worker.signals.result.connect(self.workerList_result)
+            self.active_list_workers.append(self.list_worker)
+            self.list_pool.start(self.list_worker)
         print("Finished")
 
-    @QtCore.Slot(str, dict)
+    #@QtCore.Slot(str, dict)
+    @QtCore.Slot(str)
     def workerList_result(self, result):
         """
         Handle results from the worker thread.
         """
-        key, data = result
-        print(f"Result received for {key}: {data}")
+        #key, data = result
+        #print(f"Result received for {key}: {data}")
+        print(result)
 
 
 class MainController():

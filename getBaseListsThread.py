@@ -14,10 +14,8 @@ class ListsWorkerSignals(QtCore.QObject):
     """
     Signals for worker threads
     """
-    #result = QtCore.Signal(str)
-    result = QtCore.Signal(str, dict)
-    error = QtCore.Signal(str)
-
+    result = QtCore.Signal(str)
+    #result = QtCore.Signal(str, dict)
 
 class GenericListsScannerThread(QtCore.QRunnable):
     def __init__(self, key, list_link):
@@ -27,16 +25,24 @@ class GenericListsScannerThread(QtCore.QRunnable):
         self.signals = ListsWorkerSignals()
 
     def run(self):
-        # print(f"Running thread for {self.key} in thread: {QtCore.QThread.currentThread()}")
-        sleep(5)
-        self.signals.result.emit("test", {"title": "test", "link": "test", "posters": "test"})
+        print(f"Running thread for {self.key} in thread: {QtCore.QThread.currentThread()}")
+        #QtCore.QTimer.singleShot(0, self.emit_result())
+        #sleep(5)
+        self.scrape_data()
+        self.emit_result()
+        print("BeforeProut")
+
+    def emit_result(self):
+        print(f"Emitted result for thread {self.key} in thread: {QtCore.QThread.currentThread()}")
+        self.signals.result.emit("This is a result")
+        #self.signals.result.emit("test", {"title": "test", "link": "test", "posters": "test"})
+        print("Prout")
 
     def scrape_data(self):
         """
         Perform web scraping for the list data.
         """
         white_poster = True
-        '''
         while white_poster:
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
@@ -59,8 +65,6 @@ class GenericListsScannerThread(QtCore.QRunnable):
                     white_poster = False
 
         return title, href, list(reversed(posters))
-        '''
-        return "test", "test", list("test")
 
     def check_blank_image(self, image):
         """
