@@ -30,7 +30,7 @@ class MovieScannerThread(QtCore.QRunnable):
         print(f"Starting scan for {self.movie_name}")
         result_dict = {self.movie_name: {}}
         #result_dict["worker"] = self
-        search_url = f"{self.jw_url}{self.movie_name}"
+        search_url = "%s%s" % (self.jw_url, self.movie_name.replace("-", "%20"))
         print(search_url)
 
         try:
