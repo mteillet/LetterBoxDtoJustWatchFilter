@@ -9,19 +9,12 @@ from view.main_window import Main_Window, Loading_Screen
 def main():
     app = QtWidgets.QApplication(sys.argv)
 
+    # Splashcreen, initing the base lists models
     splashcreen = Loading_Screen()
     initModel = Init_model()
     loadingController = LoadingController(initModel, splashcreen)
 
-    #initView = Main_Window()
-
-    #MainController(initModel, initView)
-
-    #initView.resize(1280, 720)
-    #initView.show()
-
     sys.exit(app.exec_())
-
 
 if __name__ == "__main__":
     main()

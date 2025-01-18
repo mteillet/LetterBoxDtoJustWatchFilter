@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from PySide2 import QtWidgets, QtCore
 from playwright.sync_api import sync_playwright
 
+from view.main_window import Main_Window
 from view.results_window import ResultsWindow
 from view.custom_list_popup import Custom_List_Popup
 from filmScannerThread import MovieScannerThread
@@ -30,9 +31,7 @@ class LoadingController(QtCore.QObject):
         """
         Connect the splash screen's initialized signal
         """
-        # print("Connecting splashscreen signals")
         self.splash_view.initialized.connect(self.get_generic_list)
-        # print("Signal connected")
 
     def get_generic_list(self):
         """
@@ -70,8 +69,9 @@ class LoadingController(QtCore.QObject):
             # print("FINISHED SCANNING GERNERIC LIST DICT")
             self.splash_view.label.setText("Finished scanning hand crafted lists")
             print("Generic list dict : %s" % self.model.get_generic_lists_dict().keys())
+            self.main_controller_call()
         else: # Update splashscreen UI if not finished
-            self.splash_view.label.setText("Finished scannig : %s" % result)
+            self.splash_view.label.setText("Finished scanning : %s" % result)
 
     def update_progress_bar(self):
         """
@@ -83,6 +83,16 @@ class LoadingController(QtCore.QObject):
         for i in range(round(percent*0.1)):
             bar = bar[:i+1] + "#" + bar[i+2:] 
         self.splash_view.progress.setText(bar)
+
+    def main_controller_call(self):
+        """
+        Calling the main controller once the generic lists threads are done working
+        """
+        init_view = Main_Window()
+        main_controller = MainController(self.model, init_view)
+        init_view.resize(1280, 720)
+        init_view.show()
+        self.splash_view.hide()
 
 
 class MainController():
@@ -111,9 +121,6 @@ class MainController():
         """
         Getting generic lists data from bdd and building the homepage accordingly
         """
-        generic_list = self.model.get_generic_list()
-        generic_list_dict = self.build_generic_lists(generic_list)
-        self.model.set_generic_lists_dict(generic_list_dict)
         self.view.build_homepage(self.model.get_generic_lists_dict())
 
     def init_model(self):
@@ -329,39 +336,6 @@ class MainController():
                                 "link" : href}
 
         return list_dict
-
-    def build_generic_lists(self, generic_list):
-        """
-        Feeding the list urls to the parser function, and building the needed
-        Dict from it
-        """
-        self.active_list_workers = []
-        for key, url in generic_list.items():
-            print("Scraping : %s at %s ..." % (key, url))
-            # TODO
-            #workerList = GenericListsScannerThread(key, url)
-            #workerList.signals.result.connect(self.workerList_result, QtCore.Qt.QueuedConnection)
-            #self.active_list_workers.append(workerList)
-            #self.pool.start(workerList)
-
-            
-            title, results = self.scrape_generic_list(url)
-            generic_list_dict[key] = results
-            generic_list_dict[key]["title"] = title
-            print("Scraping : %s OK" % key)
-
-        return generic_list_dict
-
-    @QtCore.Slot(tuple)
-    def workerList_result(self, result):
-        """
-        Adding the result from the worker thread to the bdd
-        """
-        key, list_scan_result = result
-        print("Scraping : %s OK" % key)
-        generic_list_dict = {}
-        generic_list_dict[key] = list_scan_result
-        generic_list_dict[key]["title"] = key
 
     def scrape_generic_list(self, url):
         """

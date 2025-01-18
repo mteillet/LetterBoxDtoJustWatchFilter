@@ -8,7 +8,7 @@ class Loading_Screen(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         # Set up the widget size and position
-        #self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         dimensions = [1280*0.75, 720*0.75]
         window_offset = [160, 90]
         self.setGeometry(window_offset[0], window_offset[1], window_offset[0] + dimensions[0], window_offset[1] + dimensions[1])
