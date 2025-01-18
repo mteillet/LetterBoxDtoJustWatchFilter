@@ -68,7 +68,7 @@ class LoadingController(QtCore.QObject):
         if (len(list(self.model.get_generic_lists_dict().keys())) == len(list(self.model.get_generic_list().keys()))):
             self.splash_view.label.setText("Finished scanning hand crafted lists")
             print("Generic list dict : %s" % self.model.get_generic_lists_dict().keys())
-            self.main_controller_call()
+            QtCore.QTimer.singleShot(0, self.main_controller_call)
         else: # Update splashscreen UI if not finished
             self.splash_view.label.setText("Finished scanning : %s" % result)
 
