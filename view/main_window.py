@@ -9,23 +9,73 @@ class Loading_Screen(QtWidgets.QWidget):
         super().__init__()
         # Set up the widget size and position
         #self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
-        dimensions = [1280, 720]
+        dimensions = [1280*0.75, 720*0.75]
         window_offset = [160, 90]
         self.setGeometry(window_offset[0], window_offset[1], window_offset[0] + dimensions[0], window_offset[1] + dimensions[1])
 
+        ##############
+        #   WIDGETS  #
+        ##############
+        self.logo = QtWidgets.QLabel("logo")
+        self.logo.setAlignment(QtCore.Qt.AlignCenter)
+        self.logo.setStyleSheet("color: white; font-size: 18px;")
+        self.logo.setPixmap(QtGui.QPixmap('imgs/splashscreen/splashscreen_logo_img.png'))
+        self.title = QtWidgets.QLabel("title")
+        self.title.setAlignment(QtCore.Qt.AlignCenter)
+        self.title.setStyleSheet("color: white; font-size: 18px;")
+        self.title.setPixmap(QtGui.QPixmap('imgs/splashscreen/splashscreen_title_img.png'))
+        self.phrase = QtWidgets.QLabel("phrase")
+        self.phrase.setAlignment(QtCore.Qt.AlignCenter)
+        self.phrase.setStyleSheet("color: white; font-size: 18px;")
+        self.phrase.setPixmap(QtGui.QPixmap('imgs/splashscreen/splashscreen_pitch_img.png'))
         # Create a QLabel for the loading message
-        self.label = QtWidgets.QLabel("Loading... Please wait.", self)
+        self.label = QtWidgets.QLabel("Finding curated movie lists for you...", self)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setStyleSheet("color: white; font-size: 18px;")
-        self.label.resize(dimensions[0] + window_offset[0], dimensions[1] + window_offset[1])
-        #self.label.move(400, 500)
+        self.progress = QtWidgets.QLabel("[__________]")
+        self.progress.setAlignment(QtCore.Qt.AlignCenter)
+        self.progress.setStyleSheet("color: white; font-size: 18px;")
+        self.progress_percent = QtWidgets.QLabel("0%")
+        self.progress_percent.setAlignment(QtCore.Qt.AlignCenter)
+        self.progress_percent.setStyleSheet("color: white; font-size: 18px;")
+        #self.label.resize(dimensions[0] + window_offset[0], dimensions[1] + window_offset[1])
 
         # Set the background image using a stylesheet
         self.setStyleSheet("""
             QWidget {
-                background-image: url('imgs/splashscreen/splashscreen_placeholder_tmp.jpg');
+                background-color: #1A1A1A;
             }
         """)
+        #background-image: url('imgs/splashscreen/splashscreen_placeholder_tmp.jpg');
+
+        ##############
+        #   LAYOUT   #
+        ##############
+        self.layout = QtWidgets.QVBoxLayout()
+
+        self.logoLayouts = QtWidgets.QVBoxLayout()
+        self.logoLayouts.addWidget(self.logo)
+        self.logoLayouts.addWidget(self.title)
+        self.logoLayouts.addWidget(self.phrase)
+
+        self.loadingTextLayout = QtWidgets.QVBoxLayout()
+        self.loadingTextLayout.addWidget(self.label)
+
+        self.loadingBarLayout = QtWidgets.QHBoxLayout()
+        self.loadingBarLayout.addStretch()
+        self.loadingBarLayout.addWidget(self.progress)
+        self.loadingBarLayout.addWidget(self.progress_percent)
+        self.loadingBarLayout.addStretch()
+
+        
+        self.layout.addStretch(2)
+        self.layout.addLayout(self.logoLayouts)
+        self.layout.addStretch(2)
+        self.layout.addLayout(self.loadingTextLayout)
+        self.layout.addLayout(self.loadingBarLayout)
+        self.layout.addStretch(1)
+
+        self.setLayout(self.layout)
 
     def showEvent(self, event):
         super().showEvent(event)

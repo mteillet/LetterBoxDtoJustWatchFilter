@@ -25,14 +25,13 @@ class GenericListsScannerThread(QtCore.QRunnable):
         self.signals = ListsWorkerSignals()
 
     def run(self):
-        print(f"Running thread for {self.key} in thread: {QtCore.QThread.currentThread()}")
+        # print(f"Running thread for {self.key} in thread: {QtCore.QThread.currentThread()}")
         title, href, poster_list = self.scrape_data()
         self.emit_result(title, href, poster_list)
 
     def emit_result(self, title, href, poster_list):
-        self.signals.result.emit(title, {"title" : title, "link" : href, "poster" : poster_list})
-        #self.signals.result.emit("test", {"title": "test", "link": "test", "posters": "test"})
-        print(f"Emitted result for thread {self.key} in thread: {QtCore.QThread.currentThread()}")
+        self.signals.result.emit(self.key, {"title" : title, "link" : href, "poster" : poster_list})
+        # print(f"Emitted result for thread {self.key} in thread: {QtCore.QThread.currentThread()}")
 
     def scrape_data(self):
         """

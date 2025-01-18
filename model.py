@@ -85,6 +85,9 @@ class Init_model():
     def set_generic_lists_dict(self, data):
         self.generic_lists_dict = data
 
+    def add_generic_list_dict(self, data):
+        self.generic_lists_dict.update(data)
+
     def get_generic_lists_dict(self):
         return self.generic_lists_dict
 

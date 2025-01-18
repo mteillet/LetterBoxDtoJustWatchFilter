@@ -38,7 +38,6 @@ class LoadingController(QtCore.QObject):
         """
         Getting generic lists data from the database and building the homepage.
         """
-        print("Get generic list called")
         generic_list = self.model.get_generic_list()
         self.build_generic_lists(generic_list)
 
@@ -47,25 +46,43 @@ class LoadingController(QtCore.QObject):
         Creating worker threads to fetch data for each list.
         """
         self.list_pool = QtCore.QThreadPool()
-        self.list_pool.setMaxThreadCount(2)
+        self.list_pool.setMaxThreadCount(5)
 
         self.active_list_workers = []
         for key, url in generic_list.items():
-            print(f"Starting worker for {key} at {url}")
+            # print(f"Starting worker for {key} at {url}")
             self.list_worker = GenericListsScannerThread(key, url)
             self.list_worker.signals.result.connect(self.workerList_result)
             self.active_list_workers.append(self.list_worker)
             self.list_pool.start(self.list_worker)
-        print("Finished")
 
-    #@QtCore.Slot(str)
     @QtCore.Slot(str, dict)
     def workerList_result(self, result, data):
         """
         Handle results from the worker thread.
         """
-        #key, data = result
         print("Result received for %s: %s , %s" % (result, data["title"], data["link"]))
+        # Adding result to model bdd
+        self.model.add_generic_list_dict({result : data})
+        # Check if all generic lists have been processed
+        self.update_progress_bar()
+        if (len(list(self.model.get_generic_lists_dict().keys())) == len(list(self.model.get_generic_list().keys()))):
+            # print("FINISHED SCANNING GERNERIC LIST DICT")
+            self.splash_view.label.setText("Finished scanning hand crafted lists")
+            print("Generic list dict : %s" % self.model.get_generic_lists_dict().keys())
+        else: # Update splashscreen UI if not finished
+            self.splash_view.label.setText("Finished scannig : %s" % result)
+
+    def update_progress_bar(self):
+        """
+        Handling string processing for splashscreen progress bar 
+        """
+        percent = 100 * len(list(self.model.get_generic_lists_dict().keys())) / len(list(self.model.get_generic_list().keys()))
+        self.splash_view.progress_percent.setText("{}%".format(str(round(percent)).zfill(2)))
+        bar = self.splash_view.progress.text()
+        for i in range(round(percent*0.1)):
+            bar = bar[:i+1] + "#" + bar[i+2:] 
+        self.splash_view.progress.setText(bar)
 
 
 class MainController():
