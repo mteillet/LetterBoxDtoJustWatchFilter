@@ -42,7 +42,7 @@ class GenericListsScannerThread(QtCore.QRunnable):
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
                 page = browser.new_page()
-                page.goto(self.list_link)
+                page.goto(self.list_link, timeout=60000)
                 page.wait_for_selector("ul.poster-list img", state="visible")
                 soup = BeautifulSoup(page.content(), "html.parser")
                 browser.close()

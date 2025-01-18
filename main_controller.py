@@ -66,7 +66,6 @@ class LoadingController(QtCore.QObject):
         # Check if all generic lists have been processed
         self.update_progress_bar()
         if (len(list(self.model.get_generic_lists_dict().keys())) == len(list(self.model.get_generic_list().keys()))):
-            # print("FINISHED SCANNING GERNERIC LIST DICT")
             self.splash_view.label.setText("Finished scanning hand crafted lists")
             print("Generic list dict : %s" % self.model.get_generic_lists_dict().keys())
             self.main_controller_call()
@@ -311,7 +310,7 @@ class MainController():
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
-            page.goto(link)
+            page.goto(link, timeout = 60000)
             page.wait_for_selector("ul.poster-list img", state="visible")
             
             soup = BeautifulSoup(page.content(), "html.parser")
