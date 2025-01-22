@@ -60,6 +60,7 @@ class MovieScannerThread(QtCore.QRunnable):
             self.signals.result.emit(result_dict)
             #self.signals.finished.emit()
             #print("EMITTING RESULTS : %s" % result_dict)
+            #print("Emitting result for : %s" % self.movie_name)
 
     def parse_page(self, html):
         """

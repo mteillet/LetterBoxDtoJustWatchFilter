@@ -234,7 +234,14 @@ class MainController():
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
             worker.signals.result.connect(self.worker_result, QtCore.Qt.QueuedConnection)
             self.active_workers.append(worker)
-            self.pool.start(worker)
+            #self.pool.start(worker)
+            QtCore.QTimer.singleShot(0, partial(self.start_worker, worker))
+
+    def start_worker(self, worker):
+        """
+        Definition to start worker in the pool through single shot
+        """
+        self.pool.start(worker)
  
     @QtCore.Slot(dict)
     def worker_result(self, result):
@@ -255,7 +262,7 @@ class MainController():
             self.log_message("%s films scanned" % len(list(self.model.get_scan_results().keys())))
             self.results_controller.update_ui_scan_finished(len(self.model.get_film_list()))
         # Need this print for now as raising an error is the only way found to ensure thread slots are always triggered
-        print(result["dummyKey"])
+        # print(result["dummyKey"])
 
     def log_message(self, message):
         self.results_view.log.append(str(message))
