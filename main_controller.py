@@ -161,20 +161,37 @@ class MainController():
         if self.is_valid_url(custom_list_link):
             self.popup_view.text_label.setText("URL : %s is Ok" % custom_list_link)
             self.popup_view.close()
-            #self.model.set_film_list(custom_list_link)
-            self.list_clicked(custom_list_link)
+            sens_critique = self.is_sens_critique(custom_list_link)
+            if sens_critique:
+                self.list_clicked_sens_critique(custom_list_link)
+            else:
+                self.list_clicked(custom_list_link)
         else:
             self.popup_view.text_label.setText("%s is not a valid URL, try another one please" % custom_list_link)
 
-        
     def is_valid_url(self, url):
         """
         Check if an url can be reached
         """
         try:
-            response = requests.head(url, allow_redirects=True, timeout=5)
-            return response.status_code == 200  # URL is reachable and responds with OK
-        except requests.RequestException:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+            response = requests.get(url, allow_redirects=True, timeout=5, headers=self.model.get_request_headers())
+            return response.status_code == 200
+        except requests.RequestException as e:
+            print(f"Error reaching URL {url}: {e}")
+            return False
+
+    def is_sens_critique(self, custom_list_link):
+        """
+        Checks if the list is coming from sens critique, in the other case, it is letterboxd
+        """
+        if custom_list_link.startswith("https://www.senscritique.com/"):
+            print("Custom list is from sens critique !")
+            return True
+        else:
+            print("Custom list is from letterboxd !")
             return False
 
     def fetch_gui_country(self):
@@ -204,6 +221,16 @@ class MainController():
         print("Movies:", *film_list, sep="\n")
 
         self.launch_results_view()
+
+    def list_clicked_sens_critique(self, link):
+        """
+        Launching the results view after scanning the sens critique list
+        """
+        self.model.reset_scan_results()
+        self.model.set_list_scan_url(self.ensure_full_url(link))
+
+        print("Scanning list : %s" % self.model.get_list_scan_url())
+        film_list = self.scan_list_sens_critique()
 
     def launch_results_view(self):
         """
@@ -306,6 +333,12 @@ class MainController():
             current_page += 1
 
         return film_list
+
+    def scan_list_sens_critique(self):
+        """
+        Scanning a custom sens critique list and returning the list of movie
+        """
+        print("SCANNING SENS CRITIQUE TO DO")
 
     def get_letterboxd_popular_week(self):
         """
