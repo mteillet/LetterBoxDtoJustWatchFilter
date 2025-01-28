@@ -174,9 +174,6 @@ class MainController():
         Check if an url can be reached
         """
         try:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            }
             response = requests.get(url, allow_redirects=True, timeout=5, headers=self.model.get_request_headers())
             return response.status_code == 200
         except requests.RequestException as e:
@@ -338,7 +335,33 @@ class MainController():
         """
         Scanning a custom sens critique list and returning the list of movie
         """
-        print("SCANNING SENS CRITIQUE TO DO")
+        url_to_scan = self.model.get_list_scan_url()
+        film_list = []
+        current_page = 1
+
+        while True:
+            page_url = "%s?page=%s" % (url_to_scan, current_page)
+            print("Scanning : %s" % page_url)
+            response = requests.get(page_url, allow_redirects=True, timeout=5, headers=self.model.get_request_headers())
+            if response.status_code != 200:
+                print("Error loading the link : %s" % page_url)
+                break
+
+            soup = BeautifulSoup(response.content, "html.parser")
+            elements = soup.find_all("a", {"data-testid": "product-title"})
+            if elements:
+                for element in elements:
+                    film_list.append(element.text)
+                    # NEED TO REMOVE THE YEAR FROM THE TEXT
+                    # It messes up justwatch searches
+            else:
+                break
+
+            current_page += 1
+
+        print(film_list)
+
+
 
     def get_letterboxd_popular_week(self):
         """
