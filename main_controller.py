@@ -356,7 +356,7 @@ class MainController():
             elements = soup.find_all("a", {"data-testid": "product-title"})
             if elements:
                 for element in elements:
-                    film_list.append(element.text[:-6])
+                    film_list.append(element.text[:-7].replace(" ", "-"))
                     # NEED TO REMOVE THE YEAR FROM THE TEXT
                     # It messes up justwatch searches
             else:
