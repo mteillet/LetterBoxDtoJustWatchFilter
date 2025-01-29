@@ -212,11 +212,10 @@ class MainController():
 
         print("Scanning list : %s" % self.model.get_list_scan_url())
         film_list = self.scan_list()
-        print("FILM LIST :" % film_list)
+        print("FILM LIST : ")
         self.model.set_film_list(film_list)
 
         print("Movies:", *film_list, sep="\n")
-
         self.launch_results_view()
 
     def list_clicked_sens_critique(self, link):
@@ -228,6 +227,12 @@ class MainController():
 
         print("Scanning list : %s" % self.model.get_list_scan_url())
         film_list = self.scan_list_sens_critique()
+        print("FILM LIST :")
+        self.model.set_film_list(film_list)
+
+        print("Movies:", *film_list, sep="\n")
+        self.launch_results_view()
+
 
     def launch_results_view(self):
         """
@@ -351,7 +356,7 @@ class MainController():
             elements = soup.find_all("a", {"data-testid": "product-title"})
             if elements:
                 for element in elements:
-                    film_list.append(element.text)
+                    film_list.append(element.text[:-6])
                     # NEED TO REMOVE THE YEAR FROM THE TEXT
                     # It messes up justwatch searches
             else:
@@ -359,9 +364,7 @@ class MainController():
 
             current_page += 1
 
-        print(film_list)
-
-
+        return film_list
 
     def get_letterboxd_popular_week(self):
         """
