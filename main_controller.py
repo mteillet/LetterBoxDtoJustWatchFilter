@@ -2,6 +2,7 @@
 import re
 from time import sleep
 from functools import partial
+import unicodedata
 
 import io
 import requests
@@ -356,7 +357,8 @@ class MainController():
             elements = soup.find_all("a", {"data-testid": "product-title"})
             if elements:
                 for element in elements:
-                    film_list.append(element.text[:-7].replace(" ", "-"))
+                    name = self.special_char(element.text[:-7]).replace(" ", "-")
+                    film_list.append(name)
                     # NEED TO REMOVE THE YEAR FROM THE TEXT
                     # It messes up justwatch searches
             else:
@@ -365,6 +367,14 @@ class MainController():
             current_page += 1
 
         return film_list
+
+    def special_char(self, text):
+        """
+        Replace special characters (e.g., é → e, ç → c) with their classic equivalents.
+        """
+        return ''.join(
+            c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn'
+        )
 
     def get_letterboxd_popular_week(self):
         """
