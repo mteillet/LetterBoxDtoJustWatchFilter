@@ -260,6 +260,11 @@ class MainController():
 
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, len(film_titles)))
 
+        # TODO
+        # CHECK IF BUG IS THERE IS NO STREAMING SERVICE AVAILABLE
+        # BUG OCCURS ON THIS LIST : https://www.justwatch.com/fr/recherche?q=Sa%20Majeste%20des%20mouches
+        # WITH THE FOLLOWING SENS CRITIQUE LIST : https://www.senscritique.com/liste/watching_challenge_2025/4006973
+
         for movie_name in film_titles:
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
             worker.signals.result.connect(self.worker_result, QtCore.Qt.QueuedConnection)
@@ -331,7 +336,7 @@ class MainController():
                 regex = re.compile('data-film-slug=["\'](.*?)["\']')
                 film_slug = regex.search(str(container)).group(1)
                 if film_slug:
-                    film_list.append(film_slug)
+                    film_list.append(self.special_char(film_slug))
 
             current_page += 1
 
@@ -359,8 +364,6 @@ class MainController():
                 for element in elements:
                     name = self.special_char(element.text[:-7]).replace(" ", "-")
                     film_list.append(name)
-                    # NEED TO REMOVE THE YEAR FROM THE TEXT
-                    # It messes up justwatch searches
             else:
                 break
 
