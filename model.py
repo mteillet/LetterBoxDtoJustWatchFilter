@@ -1,23 +1,35 @@
 # model.py
+import os
+import json
+
+from PySide2.QtCore import QSettings
+
+class AppSettings:
+    def __init__(self):
+        # Store settings in an INI file inside the script's directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        settings_path = os.path.join(script_dir, "app_settings.ini")
+        
+        self.settings = QSettings(settings_path, QSettings.IniFormat)
+
+    def get(self, key, default=None):
+        value = self.settings.value(key, None)
+        if value is not None:
+            try:
+                return json.loads(value)  # Convert JSON string back to Python object
+            except json.JSONDecodeError:
+                return value  # Return raw value if not JSON
+        return default
+
+    def set(self, key, value):
+        self.settings.setValue(key, json.dumps(value, indent=4))  # Store as JSON string
+
 
 class Init_model():
     def __init__(self):
+        self.get_preferences()
         self.data = None
         self.popular_list_dict = {}
-        self.generic_lists = {}
-        self.generic_lists["Romance"] = "https://letterboxd.com/search/lists/Love+Movies/"
-        self.generic_lists["Horror"] = "https://letterboxd.com/search/lists/Horror/"
-        self.generic_lists["Action"] = "https://letterboxd.com/search/lists/Action+Movies/"
-        self.generic_lists["Comedy"] = "https://letterboxd.com/search/lists/Comedy+Movies/"
-        self.generic_lists["Drama"] = "https://letterboxd.com/search/lists/Drama+Movies/"
-        self.generic_lists["Thriller"] = "https://letterboxd.com/search/lists/Thriller+Movies/"
-        self.generic_lists["Mystery"] = "https://letterboxd.com/search/lists/mistery/"
-        self.generic_lists["Animated"] = "https://letterboxd.com/search/lists/Animated+Movies/"
-        self.generic_lists["Documentaries"] = "https://letterboxd.com/search/lists/Documentaries/"
-        self.generic_lists["Science-Fiction"] = "https://letterboxd.com/search/lists/SF+Movies/"
-        self.generic_lists["True Story"] = "https://letterboxd.com/search/lists/True+Story+Movies/"
-        self.generic_lists["Musical"] = "https://letterboxd.com/search/lists/musicals/"
-
         self.popular_link = "https://letterboxd.com/lists/popular/this/week/"
 
         self.generic_lists_dict = {}
@@ -37,6 +49,35 @@ class Init_model():
             "stream" : {},
             "rent" : {},
         }
+
+    def get_preferences(self):
+        """
+        Getting preferences and setting default values if some don't exist
+        """
+        self.settings = AppSettings()
+        # Generic lists 
+        settings_generic_list = self.settings.get("generic_lists")
+        if not settings_generic_list:
+            print("Initializing default generic list preferences")
+            self.settings.set("generic_lists", self.default_generic_lists())
+        self.generic_lists = self.settings.get("generic_lists")
+        print("Generic list dict from settings : %s" % self.generic_lists)
+
+    def default_generic_lists(self):
+        generic_lists = {}
+        generic_lists["Romance"] = "https://letterboxd.com/search/lists/Love+Movies/"
+        generic_lists["Horror"] = "https://letterboxd.com/search/lists/Horror/"
+        generic_lists["Action"] = "https://letterboxd.com/search/lists/Action+Movies/"
+        generic_lists["Comedy"] = "https://letterboxd.com/search/lists/Comedy+Movies/"
+        generic_lists["Drama"] = "https://letterboxd.com/search/lists/Drama+Movies/"
+        generic_lists["Thriller"] = "https://letterboxd.com/search/lists/Thriller+Movies/"
+        generic_lists["Mystery"] = "https://letterboxd.com/search/lists/mistery/"
+        generic_lists["Animated"] = "https://letterboxd.com/search/lists/Animated+Movies/"
+        generic_lists["Documentaries"] = "https://letterboxd.com/search/lists/Documentaries/"
+        generic_lists["Science-Fiction"] = "https://letterboxd.com/search/lists/SF+Movies/"
+        generic_lists["True Story"] = "https://letterboxd.com/search/lists/True+Story+Movies/"
+        generic_lists["Musical"] = "https://letterboxd.com/search/lists/musicals/"
+        return(generic_lists)
 
     def add_stream_btn(self, data):
         self.stream_rent_btns["stream"].update(data)
