@@ -8,7 +8,7 @@ class AppSettings:
     def __init__(self):
         # Store settings in an INI file inside the script's directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        settings_path = os.path.join(script_dir, "app_settings.ini")
+        settings_path = os.path.join(script_dir, "cine_gems_settings.ini")
         
         self.settings = QSettings(settings_path, QSettings.IniFormat)
 

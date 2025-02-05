@@ -262,11 +262,6 @@ class MainController():
 
         print("Will scan the movies : \n %s \n Through URL : %s\nTotal : %s films to scan" % (film_titles, jw_search_url, len(film_titles)))
 
-        # TODO
-        # CHECK IF BUG IS THERE IS NO STREAMING SERVICE AVAILABLE
-        # BUG OCCURS ON THIS LIST : https://www.justwatch.com/fr/recherche?q=Sa%20Majeste%20des%20mouches
-        # WITH THE FOLLOWING SENS CRITIQUE LIST : https://www.senscritique.com/liste/watching_challenge_2025/4006973
-
         for movie_name in film_titles:
             worker = MovieScannerThread(movie_name, request_header, jw_search_url)
             worker.signals.result.connect(self.worker_result, QtCore.Qt.QueuedConnection)
@@ -810,6 +805,17 @@ class ResultsController(QtCore.QObject):
                 new_movie_button = self.view_results.add_movie_to_service_layout(data[film_title]["Data"]["jw_title"], data[film_title]["Data"]["poster"], data[film_title]["Data"]["rent_list"][key]["link"], self.model.get_rent_services()[key]["layout"])
                 self.new_movie_buttons.append(new_movie_button)
                 new_movie_button.clicked.connect(partial(self.movie_btn_link_url, data[film_title]["Data"]["rent_list"][key]["link"]))
+
+        self.stream_and_rent_check_preferences(data, film_title):
+
+    def stream_and_rent_check_preferences(self, data, film_title):
+        """
+        If the stream / rent service is present in the app preferences
+        set its default value
+        """
+        # TODO
+        pass
+
 
     def radio_btn_clicked(self, streamrent, button):
         """
