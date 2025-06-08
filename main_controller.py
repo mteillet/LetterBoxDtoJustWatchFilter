@@ -806,7 +806,7 @@ class ResultsController(QtCore.QObject):
                 self.new_movie_buttons.append(new_movie_button)
                 new_movie_button.clicked.connect(partial(self.movie_btn_link_url, data[film_title]["Data"]["rent_list"][key]["link"]))
 
-        self.stream_and_rent_check_preferences(data, film_title):
+        self.stream_and_rent_check_preferences(data, film_title)
 
     def stream_and_rent_check_preferences(self, data, film_title):
         """
